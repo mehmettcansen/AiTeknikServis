@@ -1,0 +1,451 @@
+@model AiTeknikServis.Entities.Dtos.Dashboard.ManagerDashboardDto
+@{
+    ViewData["Title"] = "Yönetici Dashboard";
+}
+
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-chart-line me-2"></i>Yönetici Dashboard</h2>
+            <div>
+                <a asp-controller="Manager" asp-action="AllRequests" class="btn btn-outline-primary me-2">
+                    <i class="fas fa-list me-1"></i>Tüm Talepler
+                </a>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#reportModal">
+                    <i class="fas fa-file-alt me-1"></i>Rapor Oluştur
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- KPI Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">@Model.TotalRequests</h4>
+                        <p class="card-text">Toplam Talep</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-clipboard-list fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">@Model.PendingRequests</h4>
+                        <p class="card-text">Bekleyen</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-clock fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">@Model.InProgressRequests</h4>
+                        <p class="card-text">İşlemde</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-spinner fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">@Model.CompletedRequests</h4>
+                        <p class="card-text">Tamamlanan</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-check fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Talep Durumu Dağılımı</h5>
+            </div>
+            <div class="card-body">
+                <div style="position: relative; height: 300px;">
+                    <canvas id="statusChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-chart-doughnut me-2"></i>Arıza Tipine Göre Dağılım</h5>
+            </div>
+            <div class="card-body">
+                <div style="position: relative; height: 300px;">
+                    <canvas id="categoryChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Teknisyen İş Yükü Tablosu -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-users-cog me-2"></i>
+                    Teknisyen İş Yükü
+                    <button class="btn btn-sm btn-outline-primary float-end" onclick="loadTechnicianWorkload()">
+                        <i class="fas fa-sync-alt"></i> Yenile
+                    </button>
+                </h5>
+            </div>
+            <div class="card-body">
+                <div id="technicianWorkloadContainer">
+                    <div class="text-center">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">Yükleniyor...</span>
+                        </div>
+                        <p class="mt-2">Teknisyen iş yükü bilgileri yükleniyor...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Requests and Urgent Requests -->
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-clock me-2"></i>Son Talepler</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Talep No</th>
+                                <th>Müşteri</th>
+                                <th>Başlık</th>
+                                <th>Durum</th>
+                                <th>Öncelik</th>
+                                <th>Tarih</th>
+                                <th>İşlem</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var request in Model.RecentRequests)
+                            {
+                                <tr>
+                                    <td><strong>#@request.Id</strong></td>
+                                    <td>@request.CustomerName</td>
+                                    <td>@request.Title</td>
+                                    <td>
+                                        <span class="badge @(request.Status == AiTeknikServis.Entities.Models.ServiceStatus.Completed ? "bg-success" : 
+                                                             request.Status == AiTeknikServis.Entities.Models.ServiceStatus.InProgress ? "bg-warning" : 
+                                                             request.Status == AiTeknikServis.Entities.Models.ServiceStatus.Pending ? "bg-secondary" : "bg-danger")">
+                                            @request.Status.ToString()
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge @(request.Priority == AiTeknikServis.Entities.Models.Priority.High ? "bg-danger" : 
+                                                              request.Priority == AiTeknikServis.Entities.Models.Priority.Critical ? "bg-danger" :
+                                                              request.Priority == AiTeknikServis.Entities.Models.Priority.Normal ? "bg-warning" : "bg-info")">
+                                             @request.Priority.ToString()
+                                         </span>
+                                    </td>
+                                    <td>@request.CreatedDate.ToString("dd.MM.yyyy")</td>
+                                    <td>
+                                        <a asp-controller="ServiceRequest" asp-action="Details" asp-route-id="@request.Id" 
+                                           class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Acil Talepler</h5>
+            </div>
+            <div class="card-body">
+                @if (Model.UrgentRequests.Any())
+                {
+                    @foreach (var request in Model.UrgentRequests)
+                    {
+                        <div class="d-flex mb-3 pb-3 border-bottom">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-exclamation-circle text-danger"></i>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h6 class="mb-1">
+                                    <a asp-controller="ServiceRequest" asp-action="Details" asp-route-id="@request.Id" 
+                                       class="text-decoration-none">#@request.Id - @request.Title</a>
+                                </h6>
+                                <p class="mb-1 small text-muted">@request.CustomerName</p>
+                                <small class="text-muted">@request.CreatedDate.ToString("dd.MM.yyyy HH:mm")</small>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="text-center py-3">
+                        <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
+                        <p class="text-muted mb-0">Acil talep yok</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Status Chart
+        const statusCtx = document.getElementById('statusChart').getContext('2d');
+        new Chart(statusCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Bekleyen', 'İşlemde', 'Tamamlanan'],
+                datasets: [{
+                    data: [@Model.PendingRequests, @Model.InProgressRequests, @Model.CompletedRequests],
+                    backgroundColor: ['#ffc107', '#0dcaf0', '#198754'],
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 20,
+                            usePointStyle: true
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = total > 0 ? ((context.parsed / total) * 100).toFixed(1) : '0';
+                                return context.label + ': ' + context.parsed + ' (' + percentage + '%)';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Kategori grafiği - Server-side data ile
+        const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+        new Chart(categoryCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Yazılım', 'Donanım', 'Ağ', 'Güvenlik', 'Bakım'],
+                datasets: [{
+                    data: [@Model.SoftwareRequests, @Model.HardwareRequests, @Model.NetworkRequests, @Model.SecurityRequests, @Model.MaintenanceRequests],
+                    backgroundColor: [
+                        '#007bff', // Yazılım - Mavi
+                        '#28a745', // Donanım - Yeşil
+                        '#ffc107', // Ağ - Sarı
+                        '#dc3545', // Güvenlik - Kırmızı
+                        '#6c757d'  // Bakım - Gri
+                    ],
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 15,
+                            usePointStyle: true,
+                            font: {
+                                size: 12
+                            }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = total > 0 ? ((context.parsed / total) * 100).toFixed(1) : '0';
+                                return context.label + ': ' + context.parsed + ' (' + percentage + '%)';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Sayfa yüklendiğinde teknisyen iş yükü tablosunu yükle
+        $(document).ready(function() {
+            // Teknisyen iş yükü tablosunu 1 saniye sonra yükle (performans için)
+            setTimeout(function() {
+                loadTechnicianWorkload();
+            }, 1000);
+        });
+
+        // Teknisyen iş yükü bilgilerini yükle
+        function loadTechnicianWorkload() {
+            $('#technicianWorkloadContainer').html(`
+                <div class="text-center">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Yükleniyor...</span>
+                    </div>
+                    <p class="mt-2">Teknisyen iş yükü bilgileri yükleniyor...</p>
+                </div>
+            `);
+
+            $.ajax({
+                url: '@Url.Action("GetDetailedTechnicianWorkload", "Manager")',
+                type: 'GET',
+                success: function(data) {
+                    displayTechnicianWorkload(data);
+                },
+                error: function(xhr, status, error) {
+                    $('#technicianWorkloadContainer').html(`
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Teknisyen iş yükü bilgileri yüklenirken hata oluştu: ${error}
+                        </div>
+                    `);
+                }
+            });
+        }
+
+        // Teknisyen iş yükü tablosunu göster
+        function displayTechnicianWorkload(workloadData) {
+            if (!workloadData || workloadData.length === 0) {
+                $('#technicianWorkloadContainer').html(`
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Henüz teknisyen iş yükü verisi bulunmuyor.
+                    </div>
+                `);
+                return;
+            }
+
+            let html = `
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Teknisyen</th>
+                                <th>Durum</th>
+                                <th>Bekleyen</th>
+                                <th>Devam Eden</th>
+                                <th>Tamamlanan</th>
+                                <th>Başarı Oranı</th>
+                                <th>Ortalama Süre</th>
+                                <th>Son Aktivite</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            workloadData.forEach(function(technician) {
+                const completionRate = technician.completionRate.toFixed(1);
+                const avgDays = technician.averageCompletionDays.toFixed(1);
+                const lastActivity = technician.lastAssignmentDate ? 
+                    new Date(technician.lastAssignmentDate).toLocaleDateString('tr-TR') : 'Hiç';
+
+                html += `
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="me-2">
+                                    <i class="fas fa-user-cog text-primary"></i>
+                                </div>
+                                <div>
+                                    <strong>${technician.technicianName}</strong>
+                                    <br>
+                                    <small class="text-muted">${technician.specializations || 'Genel'}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge bg-${technician.workloadStatusColor}">
+                                ${technician.workloadStatusText}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge bg-warning">${technician.pendingAssignments}</span>
+                        </td>
+                        <td>
+                            <span class="badge bg-info">${technician.inProgressAssignments}</span>
+                        </td>
+                        <td>
+                            <span class="badge bg-success">${technician.completedAssignments}</span>
+                        </td>
+                        <td>
+                            <div class="progress" style="width: 60px; height: 20px;">
+                                <div class="progress-bar ${completionRate >= 80 ? 'bg-success' : completionRate >= 60 ? 'bg-warning' : 'bg-danger'}" 
+                                     style="width: ${completionRate}%" title="${completionRate}%">
+                                </div>
+                            </div>
+                            <small>${completionRate}%</small>
+                        </td>
+                        <td>
+                            <span class="badge bg-secondary">${avgDays} gün</span>
+                        </td>
+                        <td>
+                            <small>${lastActivity}</small>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            $('#technicianWorkloadContainer').html(html);
+        }
+
+
+    </script>
+}

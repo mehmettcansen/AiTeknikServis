@@ -1,0 +1,396 @@
+@model AiTeknikServis.Entities.Dtos.ServiceRequest.ServiceRequestResponseDto
+@{
+    ViewData["Title"] = "Servis Talebi Detayı - Admin";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2><i class="fas fa-ticket-alt me-2"></i>Servis Talebi #@Model.Id</h2>
+                    <p class="text-muted mb-0">@Model.Title</p>
+                </div>
+                <div class="btn-group" role="group">
+                    <a asp-action="Index" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-1"></i>Listeye Dön
+                    </a>
+
+                    <form asp-action="Delete" asp-route-id="@Model.Id" method="post" style="display: inline;" 
+                          onsubmit="return confirm('Bu talebi silmek istediğinizden emin misiniz?')">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash me-1"></i>Sil
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Ana Bilgiler -->
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Talep Bilgileri</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td class="fw-bold">Talep No:</td>
+                                    <td>#@Model.Id</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">Başlık:</td>
+                                    <td>@Model.Title</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">Müşteri:</td>
+                                    <td>@Model.CustomerName</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">Oluşturulma Tarihi:</td>
+                                    <td>@Model.CreatedDate.ToString("dd.MM.yyyy HH:mm")</td>
+                                </tr>
+                                @if (Model.CompletedDate.HasValue)
+                                {
+                                    <tr>
+                                        <td class="fw-bold">Tamamlanma Tarihi:</td>
+                                        <td>@Model.CompletedDate.Value.ToString("dd.MM.yyyy HH:mm")</td>
+                                    </tr>
+                                }
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td class="fw-bold">Kategori:</td>
+                                    <td>
+                                        <span class="badge bg-secondary">
+                                            @switch (Model.Category)
+                                            {
+                                                case AiTeknikServis.Entities.Models.ServiceCategory.SoftwareIssue:
+                                                    <i class="fas fa-code me-1"></i>@("Yazılım Sorunu")
+                                                    break;
+                                                case AiTeknikServis.Entities.Models.ServiceCategory.HardwareIssue:
+                                                    <i class="fas fa-microchip me-1"></i>@("Donanım Sorunu")
+                                                    break;
+                                                case AiTeknikServis.Entities.Models.ServiceCategory.NetworkIssue:
+                                                    <i class="fas fa-network-wired me-1"></i>@("Ağ Sorunu")
+                                                    break;
+                                                case AiTeknikServis.Entities.Models.ServiceCategory.SecurityIssue:
+                                                    <i class="fas fa-shield-alt me-1"></i>@("Güvenlik Sorunu")
+                                                    break;
+                                                case AiTeknikServis.Entities.Models.ServiceCategory.Maintenance:
+                                                    <i class="fas fa-tools me-1"></i>@("Bakım")
+                                                    break;
+                                            }
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">Öncelik:</td>
+                                    <td>
+                                        <span class="badge @(Model.Priority == AiTeknikServis.Entities.Models.Priority.Critical ? "bg-danger" : 
+                                                              Model.Priority == AiTeknikServis.Entities.Models.Priority.High ? "bg-warning" : 
+                                                              Model.Priority == AiTeknikServis.Entities.Models.Priority.Normal ? "bg-info" : "bg-secondary")">
+                                            @switch (Model.Priority)
+                                            {
+                                                case AiTeknikServis.Entities.Models.Priority.Critical:
+                                                    <i class="fas fa-exclamation-triangle me-1"></i>@("Kritik")
+                                                    break;
+                                                case AiTeknikServis.Entities.Models.Priority.High:
+                                                    <i class="fas fa-arrow-up me-1"></i>@("Yüksek")
+                                                    break;
+                                                case AiTeknikServis.Entities.Models.Priority.Normal:
+                                                    <i class="fas fa-minus me-1"></i>@("Normal")
+                                                    break;
+                                                case AiTeknikServis.Entities.Models.Priority.Low:
+                                                    <i class="fas fa-arrow-down me-1"></i>@("Düşük")
+                                                    break;
+                                            }
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">Durum:</td>
+                                    <td>
+                                        <span class="badge @(Model.Status == AiTeknikServis.Entities.Models.ServiceStatus.Completed ? "bg-success" : 
+                                                              Model.Status == AiTeknikServis.Entities.Models.ServiceStatus.InProgress ? "bg-primary" : 
+                                                              Model.Status == AiTeknikServis.Entities.Models.ServiceStatus.Pending ? "bg-warning" : 
+                                                              Model.Status == AiTeknikServis.Entities.Models.ServiceStatus.OnHold ? "bg-secondary" : "bg-danger")">
+                                            @switch (Model.Status)
+                                            {
+                                                case AiTeknikServis.Entities.Models.ServiceStatus.Pending:
+                                                    <i class="fas fa-clock me-1"></i>@("Beklemede")
+                                                    break;
+                                                case AiTeknikServis.Entities.Models.ServiceStatus.InProgress:
+                                                    <i class="fas fa-cog me-1"></i>@("İşlemde")
+                                                    break;
+                                                case AiTeknikServis.Entities.Models.ServiceStatus.OnHold:
+                                                    <i class="fas fa-pause me-1"></i>@("Bekletildi")
+                                                    break;
+                                                case AiTeknikServis.Entities.Models.ServiceStatus.Completed:
+                                                    <i class="fas fa-check me-1"></i>@("Tamamlandı")
+                                                    break;
+                                                case AiTeknikServis.Entities.Models.ServiceStatus.Cancelled:
+                                                    <i class="fas fa-times me-1"></i>@("İptal Edildi")
+                                                    break;
+                                                case AiTeknikServis.Entities.Models.ServiceStatus.Rejected:
+                                                    <i class="fas fa-ban me-1"></i>@("Reddedildi")
+                                                    break;
+                                            }
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">Teknisyen:</td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(Model.TechnicianName))
+                                        {
+                                            <div class="d-flex align-items-center">
+                                                <i class="fas fa-user-cog me-2 text-primary"></i>
+                                                <span>@Model.TechnicianName</span>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">
+                                                <i class="fas fa-user-slash me-1"></i>Henüz atanmadı
+                                            </span>
+                                        }
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Açıklama -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-align-left me-2"></i>Sorun Açıklaması</h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-0">@Model.Description</p>
+                    @if (!string.IsNullOrEmpty(Model.ProductInfo))
+                    {
+                        <hr>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <strong>Ürün/Cihaz Bilgisi:</strong>
+                                <p class="mb-0">@Model.ProductInfo</p>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Çözüm -->
+            @if (!string.IsNullOrEmpty(Model.Resolution))
+            {
+                <div class="card mb-4">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0"><i class="fas fa-check-circle me-2"></i>Çözüm</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-0">@Model.Resolution</p>
+                    </div>
+                </div>
+            }
+
+            <!-- AI Önerileri -->
+            @if (Model.AiPredictions != null && Model.AiPredictions.Any())
+            {
+                <div class="card mb-4">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0"><i class="fas fa-robot me-2"></i>AI Analizi ve Öneriler</h5>
+                    </div>
+                    <div class="card-body">
+                        @foreach (var prediction in Model.AiPredictions)
+                        {
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="badge bg-primary">Güven Skoru: %@((prediction.ConfidenceScore * 100).ToString("F0"))</span>
+                                    <small class="text-muted">@prediction.CreatedDate.ToString("dd.MM.yyyy HH:mm")</small>
+                                </div>
+                                <p class="mb-0">@prediction.Recommendation</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Yan Panel -->
+        <div class="col-md-4">
+            <!-- Admin İşlemleri -->
+            <div class="card mb-4">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="fas fa-cogs me-2"></i>Admin İşlemleri</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+
+                        @if (string.IsNullOrEmpty(Model.TechnicianName))
+                        {
+                            <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#assignTechnicianModal">
+                                <i class="fas fa-user-plus me-1"></i>Teknisyen Ata
+                            </button>
+                        }
+                        @if (Model.Status != AiTeknikServis.Entities.Models.ServiceStatus.Completed)
+                        {
+                            <button type="button" class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#completeRequestModal">
+                                <i class="fas fa-check me-1"></i>Talebi Tamamla
+                            </button>
+                        }
+                        <form asp-action="Delete" asp-route-id="@Model.Id" method="post" 
+                              onsubmit="return confirm('Bu talebi silmek istediğinizden emin misiniz?')">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-outline-danger w-100">
+                                <i class="fas fa-trash me-1"></i>Talebi Sil
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- İletişim Bilgileri -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-phone me-2"></i>İletişim Bilgileri</h5>
+                </div>
+                <div class="card-body">
+                    @if (!string.IsNullOrEmpty(Model.Phone))
+                    {
+                        <div class="mb-2">
+                            <i class="fas fa-phone me-2 text-primary"></i>
+                            <a href="tel:@Model.Phone">@Model.Phone</a>
+                        </div>
+                    }
+                    <div class="mb-2">
+                        <i class="fas fa-@(Model.ContactPreference == AiTeknikServis.Entities.Models.ContactPreference.Email ? "envelope" : 
+                                          Model.ContactPreference == AiTeknikServis.Entities.Models.ContactPreference.Phone ? "phone" : "sms") me-2 text-primary"></i>
+                        <span>@switch (Model.ContactPreference)
+                        {
+                            case AiTeknikServis.Entities.Models.ContactPreference.Email:
+                                @("Email")
+                                break;
+                            case AiTeknikServis.Entities.Models.ContactPreference.Phone:
+                                @("Telefon")
+                                break;
+                            case AiTeknikServis.Entities.Models.ContactPreference.SMS:
+                                @("SMS")
+                                break;
+                        }</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Maliyet Bilgileri -->
+            @if (Model.EstimatedCost.HasValue || Model.ActualCost.HasValue)
+            {
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-money-bill-wave me-2"></i>Maliyet Bilgileri</h5>
+                    </div>
+                    <div class="card-body">
+                        @if (Model.EstimatedCost.HasValue)
+                        {
+                            <div class="mb-2">
+                                <strong>Tahmini Maliyet:</strong>
+                                <span class="text-info">₺@Model.EstimatedCost.Value.ToString("N2")</span>
+                            </div>
+                        }
+                        @if (Model.ActualCost.HasValue)
+                        {
+                            <div class="mb-2">
+                                <strong>Gerçek Maliyet:</strong>
+                                <span class="text-success">₺@Model.ActualCost.Value.ToString("N2")</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+
+            <!-- Dosyalar -->
+            @if (Model.Files != null && Model.Files.Any())
+            {
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-paperclip me-2"></i>Ekli Dosyalar</h5>
+                    </div>
+                    <div class="card-body">
+                        @foreach (var file in Model.Files)
+                        {
+                            var isImage = !string.IsNullOrEmpty(file.ContentType) && file.ContentType.StartsWith("image/");
+                            
+                            <div class="mb-3 p-2 bg-light rounded">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-@(isImage ? "image" : "file") me-2"></i>
+                                        <span>@file.FileName</span>
+                                    </div>
+                                    <div>
+                                        <small class="text-muted me-2">@file.FormattedFileSize</small>
+                                        <a asp-controller="ServiceRequest" asp-action="DownloadFile" asp-route-fileId="@file.Id" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-download"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                                
+                                @if (isImage)
+                                {
+                                    <div class="text-center">
+                                        <img src="@Url.Action("GetFile", "ServiceRequest", new { area = "Admin", fileId = file.Id })" 
+                                             alt="@file.FileName" 
+                                             class="img-fluid rounded shadow-sm file-preview-image"
+                                             style="max-height: 200px; cursor: pointer;"
+                                             onclick="showImageModal('@Url.Action("GetFile", "ServiceRequest", new { area = "Admin", fileId = file.Id })', '@file.FileName')" />
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Resim Modal -->
+<div class="modal fade" id="imageModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="imageModalTitle">Resim Önizleme</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img id="imageModalImg" src="" alt="" class="img-fluid rounded" />
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+                <a id="imageDownloadBtn" href="" class="btn btn-primary" download>
+                    <i class="fas fa-download me-1"></i>İndir
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function showImageModal(imageSrc, fileName) {
+    document.getElementById('imageModalImg').src = imageSrc;
+    document.getElementById('imageModalTitle').textContent = fileName;
+    document.getElementById('imageDownloadBtn').href = imageSrc;
+    document.getElementById('imageDownloadBtn').download = fileName;
+    
+    var imageModal = new bootstrap.Modal(document.getElementById('imageModal'));
+    imageModal.show();
+}
+</script>

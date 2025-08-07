@@ -1,0 +1,31 @@
+@model AiTeknikServis.Entities.Models.Priority
+
+@{
+    var badgeClass = Model switch
+    {
+        AiTeknikServis.Entities.Models.Priority.Low => "bg-success",
+        AiTeknikServis.Entities.Models.Priority.Normal => "bg-primary",
+        AiTeknikServis.Entities.Models.Priority.High => "bg-danger",
+        _ => "bg-secondary"
+    };
+    
+    var icon = Model switch
+    {
+        AiTeknikServis.Entities.Models.Priority.Low => "fas fa-arrow-down",
+        AiTeknikServis.Entities.Models.Priority.Normal => "fas fa-minus",
+        AiTeknikServis.Entities.Models.Priority.High => "fas fa-arrow-up",
+        _ => "fas fa-question"
+    };
+    
+    var text = Model switch
+    {
+        AiTeknikServis.Entities.Models.Priority.Low => "Düşük",
+        AiTeknikServis.Entities.Models.Priority.Normal => "Normal",
+        AiTeknikServis.Entities.Models.Priority.High => "Yüksek",
+        _ => "Bilinmiyor"
+    };
+}
+
+<span class="badge @badgeClass">
+    <i class="@icon me-1"></i>@text
+</span>

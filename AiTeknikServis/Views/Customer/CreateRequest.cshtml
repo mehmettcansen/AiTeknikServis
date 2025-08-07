@@ -1,0 +1,185 @@
+@model AiTeknikServis.Entities.Dtos.ServiceRequest.ServiceRequestCreateDto
+@{
+    ViewData["Title"] = "Yeni Servis Talebi";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0"><i class="fas fa-plus me-2"></i>Yeni Servis Talebi Oluştur</h4>
+            </div>
+            <div class="card-body">
+                <form asp-action="CreateRequest" method="post" enctype="multipart/form-data" id="createRequestForm">
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <label asp-for="Title" class="form-label">Talep Başlığı *</label>
+                            <input asp-for="Title" class="form-control" placeholder="Kısa ve açıklayıcı bir başlık yazın">
+                            <span asp-validation-for="Title" class="text-danger"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <label asp-for="Description" class="form-label">Sorun Açıklaması *</label>
+                            <textarea asp-for="Description" class="form-control" rows="5" 
+                                      placeholder="Sorunu detaylı bir şekilde açıklayın. Ne zaman başladı, hangi koşullarda oluşuyor, hata mesajları varsa belirtin."></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="ProductInfo" class="form-label">Ürün/Cihaz Bilgisi</label>
+                            <input asp-for="ProductInfo" class="form-control" placeholder="Marka, model, seri no vb.">
+                            <span asp-validation-for="ProductInfo" class="text-danger"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Phone" class="form-label">Telefon Numarası *</label>
+                            <input asp-for="Phone" class="form-control" placeholder="0555 123 45 67" type="tel">
+                            <span asp-validation-for="Phone" class="text-danger"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="ScheduledDate" class="form-label">Tercih Edilen Tarih</label>
+                            <input asp-for="ScheduledDate" type="datetime-local" class="form-control">
+                            <span asp-validation-for="ScheduledDate" class="text-danger"></span>
+                        </div>
+                    </div>
+                    
+                    <!-- File Upload Section -->
+                    <div class="mb-3">
+                        <label class="form-label">Dosya Ekleri</label>
+                        <div class="border rounded p-3">
+                            <div class="mb-2">
+                                <input type="file" class="form-control" id="fileInput" name="Files" multiple 
+                                       accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx,.txt,.xlsx,.ppt,.pptx,.zip,.rar">
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Maksimum 5 dosya, her biri en fazla 10MB. 
+                                    Desteklenen formatlar: JPG, PNG, PDF, DOC, XLS, PPT, ZIP, RAR
+                                </div>
+                            </div>
+                            <div id="filePreview" class="mt-2"></div>
+                            <div id="imagePreview" class="mt-3 row"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a asp-action="Dashboard" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-1"></i>Geri Dön
+                        </a>
+                        <button type="submit" class="btn btn-primary" id="submitBtn">
+                            <i class="fas fa-paper-plane me-1"></i>Talep Oluştur
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // File preview functionality
+            $('#fileInput').on('change', function() {
+                const files = this.files;
+                const preview = $('#filePreview');
+                const imagePreview = $('#imagePreview');
+                preview.empty();
+                imagePreview.empty();
+                
+                if (files.length > 5) {
+                    alert('Maksimum 5 dosya seçebilirsiniz.');
+                    this.value = '';
+                    return;
+                }
+                
+                for (let i = 0; i < files.length; i++) {
+                    const file = files[i];
+                    if (file.size > 10 * 1024 * 1024) {
+                        alert(`${file.name} dosyası çok büyük (max 10MB).`);
+                        this.value = '';
+                        preview.empty();
+                        imagePreview.empty();
+                        return;
+                    }
+                    
+                    // File list item
+                    const fileIcon = getFileIcon(file.type, file.name);
+                    const fileItem = $(`
+                        <div class="d-flex align-items-center mb-2 p-2 bg-light rounded">
+                            <i class="${fileIcon} me-2"></i>
+                            <span class="flex-grow-1">${file.name}</span>
+                            <small class="text-muted">${(file.size / 1024 / 1024).toFixed(2)} MB</small>
+                            <button type="button" class="btn btn-sm btn-outline-danger ms-2" onclick="removeFile(${i})">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    `);
+                    preview.append(fileItem);
+                    
+                    // Image preview for image files
+                    if (file.type.startsWith('image/')) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            const imageItem = $(`
+                                <div class="col-md-3 mb-3">
+                                    <div class="card">
+                                        <img src="${e.target.result}" class="card-img-top" style="height: 250px; object-fit: cover; cursor: pointer;" alt="${file.name}" onclick="showImagePreview('${e.target.result}', '${file.name}')"
+                                        <div class="card-body p-2">
+                                            <small class="text-muted">${file.name}</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            `);
+                            imagePreview.append(imageItem);
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                }
+            });
+            
+            // Form submission
+            $('#createRequestForm').on('submit', function() {
+                $('#submitBtn').prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i>Oluşturuluyor...');
+            });
+        });
+
+        function getFileIcon(fileType, fileName) {
+            const extension = fileName.split('.').pop().toLowerCase();
+            
+            if (fileType.startsWith('image/')) {
+                return 'fas fa-image text-success';
+            } else if (fileType === 'application/pdf') {
+                return 'fas fa-file-pdf text-danger';
+            } else if (fileType.includes('word') || extension === 'doc' || extension === 'docx') {
+                return 'fas fa-file-word text-primary';
+            } else if (fileType.includes('excel') || extension === 'xls' || extension === 'xlsx') {
+                return 'fas fa-file-excel text-success';
+            } else if (fileType.includes('powerpoint') || extension === 'ppt' || extension === 'pptx') {
+                return 'fas fa-file-powerpoint text-warning';
+            } else if (extension === 'zip' || extension === 'rar') {
+                return 'fas fa-file-archive text-secondary';
+            } else if (extension === 'txt') {
+                return 'fas fa-file-alt text-info';
+            } else {
+                return 'fas fa-file text-muted';
+            }
+        }
+
+        function removeFile(index) {
+            // This is a simplified version - in a real implementation,
+            // you'd need to manage the file list properly
+            $('#fileInput').val('');
+            $('#filePreview').empty();
+            $('#imagePreview').empty();
+        }
+    </script>
+}

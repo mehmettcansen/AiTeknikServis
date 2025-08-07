@@ -1,0 +1,263 @@
+@model List<AiTeknikServis.Entities.Dtos.ServiceRequest.ServiceRequestResponseDto>
+@{
+    ViewData["Title"] = "Servis Talepleri";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-list me-2"></i>Tüm Servis Talepleri</h2>
+                @if (User.IsInRole("Customer") || User.IsInRole("Admin"))
+                {
+                    <a asp-action="Create" class="btn btn-primary">
+                        <i class="fas fa-plus me-1"></i>Yeni Talep Oluştur
+                    </a>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title">@Model.Count</h4>
+                            <p class="card-text">Toplam Talep</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-clipboard-list fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title">@Model.Count(r => r.Status == AiTeknikServis.Entities.Models.ServiceStatus.Pending)</h4>
+                            <p class="card-text">Beklemede</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-clock fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title">@Model.Count(r => r.Status == AiTeknikServis.Entities.Models.ServiceStatus.InProgress)</h4>
+                            <p class="card-text">İşlemde</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-cog fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title">@Model.Count(r => r.Status == AiTeknikServis.Entities.Models.ServiceStatus.Completed)</h4>
+                            <p class="card-text">Tamamlandı</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-check fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Requests Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Servis Talepleri (@Model.Count)</h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Talep No</th>
+                                        <th>Başlık</th>
+                                        <th>Müşteri</th>
+                                        <th>Kategori</th>
+                                        <th>Öncelik</th>
+                                        <th>Durum</th>
+                                        <th>Teknisyen</th>
+                                        <th>Oluşturulma Tarihi</th>
+                                        <th>İşlemler</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var request in Model.OrderByDescending(r => r.CreatedDate))
+                                    {
+                                        <tr>
+                                            <td><strong>#@request.Id</strong></td>
+                                            <td>
+                                                <div class="fw-bold">@request.Title</div>
+                                                <small class="text-muted">@(request.Description.Length > 50 ? request.Description.Substring(0, 50) + "..." : request.Description)</small>
+                                            </td>
+                                            <td>@request.CustomerName</td>
+                                            <td>
+                                                <span class="badge bg-secondary">
+                                                    @switch (request.Category)
+                                                    {
+                                                        case AiTeknikServis.Entities.Models.ServiceCategory.SoftwareIssue:
+                                                            <i class="fas fa-code me-1"></i>@("Yazılım")
+                                                            break;
+                                                        case AiTeknikServis.Entities.Models.ServiceCategory.HardwareIssue:
+                                                            <i class="fas fa-microchip me-1"></i>@("Donanım")
+                                                            break;
+                                                        case AiTeknikServis.Entities.Models.ServiceCategory.NetworkIssue:
+                                                            <i class="fas fa-network-wired me-1"></i>@("Ağ")
+                                                            break;
+                                                        case AiTeknikServis.Entities.Models.ServiceCategory.SecurityIssue:
+                                                            <i class="fas fa-shield-alt me-1"></i>@("Güvenlik")
+                                                            break;
+                                                        case AiTeknikServis.Entities.Models.ServiceCategory.Maintenance:
+                                                            <i class="fas fa-tools me-1"></i>@("Bakım")
+                                                            break;
+                                                    }
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <span class="badge @(request.Priority == AiTeknikServis.Entities.Models.Priority.Critical ? "bg-danger" : 
+                                                                      request.Priority == AiTeknikServis.Entities.Models.Priority.High ? "bg-warning" : 
+                                                                      request.Priority == AiTeknikServis.Entities.Models.Priority.Normal ? "bg-info" : "bg-secondary")">
+                                                    @switch (request.Priority)
+                                                    {
+                                                        case AiTeknikServis.Entities.Models.Priority.Critical:
+                                                            <i class="fas fa-exclamation-triangle me-1"></i>@("Kritik")
+                                                            break;
+                                                        case AiTeknikServis.Entities.Models.Priority.High:
+                                                            <i class="fas fa-arrow-up me-1"></i>@("Yüksek")
+                                                            break;
+                                                        case AiTeknikServis.Entities.Models.Priority.Normal:
+                                                            <i class="fas fa-minus me-1"></i>@("Normal")
+                                                            break;
+                                                        case AiTeknikServis.Entities.Models.Priority.Low:
+                                                            <i class="fas fa-arrow-down me-1"></i>@("Düşük")
+                                                            break;
+                                                    }
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <span class="badge @(request.Status == AiTeknikServis.Entities.Models.ServiceStatus.Completed ? "bg-success" : 
+                                                                      request.Status == AiTeknikServis.Entities.Models.ServiceStatus.InProgress ? "bg-primary" : 
+                                                                      request.Status == AiTeknikServis.Entities.Models.ServiceStatus.Pending ? "bg-warning" : 
+                                                                      request.Status == AiTeknikServis.Entities.Models.ServiceStatus.OnHold ? "bg-secondary" : "bg-danger")">
+                                                    @switch (request.Status)
+                                                    {
+                                                        case AiTeknikServis.Entities.Models.ServiceStatus.Pending:
+                                                            <i class="fas fa-clock me-1"></i>@("Beklemede")
+                                                            break;
+                                                        case AiTeknikServis.Entities.Models.ServiceStatus.InProgress:
+                                                            <i class="fas fa-cog me-1"></i>@("İşlemde")
+                                                            break;
+                                                        case AiTeknikServis.Entities.Models.ServiceStatus.OnHold:
+                                                            <i class="fas fa-pause me-1"></i>@("Bekletildi")
+                                                            break;
+                                                        case AiTeknikServis.Entities.Models.ServiceStatus.Completed:
+                                                            <i class="fas fa-check me-1"></i>@("Tamamlandı")
+                                                            break;
+                                                        case AiTeknikServis.Entities.Models.ServiceStatus.Cancelled:
+                                                            <i class="fas fa-times me-1"></i>@("İptal Edildi")
+                                                            break;
+                                                        case AiTeknikServis.Entities.Models.ServiceStatus.Rejected:
+                                                            <i class="fas fa-ban me-1"></i>@("Reddedildi")
+                                                            break;
+                                                    }
+                                                </span>
+                                            </td>
+                                            <td>
+                                                @if (!string.IsNullOrEmpty(request.TechnicianName))
+                                                {
+                                                    <div class="d-flex align-items-center">
+                                                        <i class="fas fa-user-cog me-2 text-primary"></i>
+                                                        <span>@request.TechnicianName</span>
+                                                    </div>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">
+                                                        <i class="fas fa-user-slash me-1"></i>Atanmadı
+                                                    </span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <div>@request.CreatedDate.ToString("dd.MM.yyyy")</div>
+                                                <small class="text-muted">@request.CreatedDate.ToString("HH:mm")</small>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm" role="group">
+                                                    <a asp-action="Details" asp-route-id="@request.Id" 
+                                                       class="btn btn-outline-primary" data-bs-toggle="tooltip" title="Detayları Görüntüle">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+
+                                                    @if (User.IsInRole("Admin"))
+                                                    {
+                                                        <form asp-action="Delete" asp-route-id="@request.Id" method="post" style="display: inline;" 
+                                                              onsubmit="return confirm('Bu talebi silmek istediğinizden emin misiniz?')">
+                                                            @Html.AntiForgeryToken()
+                                                            <button type="submit" class="btn btn-outline-danger" data-bs-toggle="tooltip" title="Sil">
+                                                                <i class="fas fa-trash"></i>
+                                                            </button>
+                                                        </form>
+                                                    }
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="fas fa-inbox fa-4x text-muted mb-3"></i>
+                            <h4 class="text-muted">Henüz hiç servis talebi bulunmuyor</h4>
+                            <p class="text-muted mb-4">İlk servis talebini oluşturarak başlayabilirsiniz.</p>
+                            @if (User.IsInRole("Customer") || User.IsInRole("Admin"))
+                            {
+                                <a asp-action="Create" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-plus me-2"></i>İlk Talebi Oluşturun
+                                </a>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Tooltip'leri etkinleştir
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+    </script>
+}

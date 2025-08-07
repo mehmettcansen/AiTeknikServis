@@ -1,0 +1,153 @@
+@model IEnumerable<AiTeknikServis.Entities.Models.User>
+@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="mb-0">Admin Dashboard</h2>
+                <div class="btn-group" role="group">
+                    <a href="@Url.Action("CreateManager", "Admin", new { area = "Admin" })" class="btn btn-primary">
+                        <i class="fas fa-user-plus"></i> Manager Oluştur
+                    </a>
+                    <a href="@Url.Action("CreateTechnician", "Admin", new { area = "Admin" })" class="btn btn-success">
+                        <i class="fas fa-user-cog"></i> Teknisyen Oluştur
+                    </a>
+                    <a href="@Url.Action("Users", "Admin", new { area = "Admin" })" class="btn btn-info">
+                        <i class="fas fa-users"></i> Tüm Kullanıcılar
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title">@Model.Count(u => u.Role == AiTeknikServis.Entities.Models.UserRole.Customer)</h4>
+                            <p class="card-text">Toplam Müşteri</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-users fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title">@Model.Count(u => u.Role == AiTeknikServis.Entities.Models.UserRole.Technician)</h4>
+                            <p class="card-text">Toplam Teknisyen</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-tools fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title">@Model.Count(u => u.Role == AiTeknikServis.Entities.Models.UserRole.Manager)</h4>
+                            <p class="card-text">Toplam Manager</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-user-tie fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title">@Model.Count(u => u.Role == AiTeknikServis.Entities.Models.UserRole.Admin)</h4>
+                            <p class="card-text">Toplam Admin</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-user-shield fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Son Eklenen Kullanıcılar</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Ad Soyad</th>
+                                    <th>E-posta</th>
+                                    <th>Rol</th>
+                                    <th>Oluşturulma Tarihi</th>
+                                    <th>Durum</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var user in Model.OrderByDescending(u => u.CreatedDate).Take(10))
+                                {
+                                    <tr>
+                                        <td>@user.FirstName @user.LastName</td>
+                                        <td>@user.Email</td>
+                                        <td>
+                                            @switch (user.Role)
+                                            {
+                                                case AiTeknikServis.Entities.Models.UserRole.Admin:
+                                                    <span class="badge bg-danger">Admin</span>
+                                                    break;
+                                                case AiTeknikServis.Entities.Models.UserRole.Manager:
+                                                    <span class="badge bg-warning">Manager</span>
+                                                    break;
+                                                case AiTeknikServis.Entities.Models.UserRole.Technician:
+                                                    <span class="badge bg-success">Teknisyen</span>
+                                                    break;
+                                                case AiTeknikServis.Entities.Models.UserRole.Customer:
+                                                    <span class="badge bg-primary">Müşteri</span>
+                                                    break;
+                                            }
+                                        </td>
+                                        <td>@user.CreatedDate.ToString("dd.MM.yyyy HH:mm")</td>
+                                        <td>
+                                            @if (user.IsActive)
+                                            {
+                                                <span class="badge bg-success">Aktif</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-secondary">Pasif</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

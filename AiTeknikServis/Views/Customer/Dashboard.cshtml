@@ -1,0 +1,188 @@
+@model AiTeknikServis.Entities.Dtos.Dashboard.CustomerDashboardDto
+@{
+    ViewData["Title"] = "Müşteri Dashboard";
+}
+
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-tachometer-alt me-2"></i>Dashboard</h2>
+            <a asp-action="CreateRequest" class="btn btn-primary">
+                <i class="fas fa-plus me-1"></i>Yeni Talep Oluştur
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">@Model.TotalRequests</h4>
+                        <p class="card-text">Toplam Talep</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-clipboard-list fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">@Model.PendingRequests</h4>
+                        <p class="card-text">Bekleyen</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-clock fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">@Model.CompletedRequests</h4>
+                        <p class="card-text">Tamamlanan</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-check fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">@Model.RecentNotifications.Count</h4>
+                        <p class="card-text">Bildirim</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-bell fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Requests -->
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-list me-2"></i>Son Taleplerim</h5>
+            </div>
+            <div class="card-body">
+                @if (Model.MyRequests.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Talep No</th>
+                                    <th>Başlık</th>
+                                    <th>Durum</th>
+                                    <th>Öncelik</th>
+                                    <th>Tarih</th>
+                                    <th>İşlem</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var request in Model.MyRequests.Take(5))
+                                {
+                                    <tr>
+                                        <td><strong>#@request.Id</strong></td>
+                                        <td>@request.Title</td>
+                                        <td>
+                                            <span class="badge @(request.Status == AiTeknikServis.Entities.Models.ServiceStatus.Completed ? "bg-success" : 
+                                                                 request.Status == AiTeknikServis.Entities.Models.ServiceStatus.InProgress ? "bg-warning" : 
+                                                                 request.Status == AiTeknikServis.Entities.Models.ServiceStatus.Pending ? "bg-secondary" : "bg-danger")">
+                                                @request.Status.ToString()
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="badge @(request.Priority == AiTeknikServis.Entities.Models.Priority.High ? "bg-danger" : 
+                                                                  request.Priority == AiTeknikServis.Entities.Models.Priority.Critical ? "bg-danger" :
+                                                                  request.Priority == AiTeknikServis.Entities.Models.Priority.Normal ? "bg-warning" : "bg-info")">
+                                                 @request.Priority.ToString()
+                                             </span>
+                                        </td>
+                                        <td>@request.CreatedDate.ToString("dd.MM.yyyy")</td>
+                                        <td>
+                                            <a asp-controller="ServiceRequest" asp-action="Details" asp-route-id="@request.Id" 
+                                               class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="text-center">
+                        <a asp-action="MyRequests" class="btn btn-outline-primary">
+                            <i class="fas fa-list me-1"></i>Tüm Taleplerim
+                        </a>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-4">
+                        <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">Henüz hiç talebiniz bulunmuyor.</p>
+                        <a asp-action="CreateRequest" class="btn btn-primary">
+                            <i class="fas fa-plus me-1"></i>İlk Talebinizi Oluşturun
+                        </a>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Notifications -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-bell me-2"></i>Son Bildirimler</h5>
+            </div>
+            <div class="card-body">
+                @if (Model.RecentNotifications.Any())
+                {
+                    @foreach (var notification in Model.RecentNotifications)
+                    {
+                        <div class="d-flex mb-3 pb-3 border-bottom">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-info-circle text-primary"></i>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h6 class="mb-1">@notification.Title</h6>
+                                <p class="mb-1 small text-muted">@notification.Message</p>
+                                <small class="text-muted">@notification.CreatedDate.ToString("dd.MM.yyyy HH:mm")</small>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="text-center py-3">
+                        <i class="fas fa-bell-slash fa-2x text-muted mb-2"></i>
+                        <p class="text-muted mb-0">Yeni bildirim yok</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

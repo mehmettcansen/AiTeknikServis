@@ -1,0 +1,34 @@
+
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset='utf-8'>
+                    <title>Teknisyen Atandı</title>
+                </head>
+                <body style='font-family: Arial, sans-serif; line-height: 1.6; color: #333;'>
+                    <div style='max-width: 600px; margin: 0 auto; padding: 20px;'>
+                        <div style='background: #28a745; color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;'>
+                            <h2 style='margin: 0;'>✅ Teknisyen Atandı</h2>
+                        </div>
+                        
+                        <div style='background: white; padding: 20px; border: 1px solid #e9ecef; border-radius: 8px;'>
+                            <p>Merhaba <strong>{CustomerName}</strong>,</p>
+                            <p>'{RequestTitle}' başlıklı servis talebinize <strong>{TechnicianName}</strong> teknisyeni atandı.</p>
+                            
+                            <div style='background: #e3f2fd; padding: 15px; border-radius: 5px; margin: 20px 0;'>
+                                <p style='margin: 0;'><strong>📞 Teknisyenimiz yakında sizinle iletişime geçecektir.</strong></p>
+                            </div>
+                            
+                            <table style='width: 100%; margin: 20px 0;'>
+                                <tr><td style='padding: 8px; background: #f8f9fa;'><strong>Teknisyen:</strong></td><td style='padding: 8px;'>{TechnicianName}</td></tr>
+                                <tr><td style='padding: 8px; background: #f8f9fa;'><strong>Uzmanlık:</strong></td><td style='padding: 8px;'>{TechnicianSpecialization}</td></tr>
+                                <tr><td style='padding: 8px; background: #f8f9fa;'><strong>Talep No:</strong></td><td style='padding: 8px;'>#{RequestId}</td></tr>
+                            </table>
+                        </div>
+                        
+                        <div style='margin-top: 20px; padding: 20px; background: #f8f9fa; border-radius: 8px; text-align: center;'>
+                            <p style='margin: 0;'>Teşekkürler,<br><strong>AI Teknik Servis Ekibi</strong></p>
+                        </div>
+                    </div>
+                </body>
+                </html>

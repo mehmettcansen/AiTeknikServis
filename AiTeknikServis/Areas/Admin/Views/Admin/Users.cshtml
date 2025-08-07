@@ -1,0 +1,294 @@
+@model IEnumerable<AiTeknikServis.Entities.Models.User>
+@{
+    ViewData["Title"] = "Kullanıcı Yönetimi";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="mb-0">Kullanıcı Yönetimi</h2>
+                <div class="btn-group" role="group">
+                    <a href="@Url.Action("Dashboard", "Admin", new { area = "Admin" })" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Dashboard'a Dön
+                    </a>
+                    <a href="@Url.Action("CreateManager", "Admin", new { area = "Admin" })" class="btn btn-primary">
+                        <i class="fas fa-user-plus"></i> Manager Ekle
+                    </a>
+                    <a href="@Url.Action("CreateTechnician", "Admin", new { area = "Admin" })" class="btn btn-success">
+                        <i class="fas fa-user-cog"></i> Teknisyen Ekle
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Tüm Kullanıcılar (@Model.Count())</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Ad Soyad</th>
+                                    <th>E-posta</th>
+                                    <th>Telefon</th>
+                                    <th>Rol</th>
+                                    <th>Oluşturulma Tarihi</th>
+                                    <th>Durum</th>
+                                    <th>İşlemler</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var user in Model.OrderBy(u => u.Role).ThenBy(u => u.FirstName))
+                                {
+                                    <tr>
+                                        <td>@user.Id</td>
+                                        <td>@user.FirstName @user.LastName</td>
+                                        <td>@user.Email</td>
+                                        <td>@(user.Phone ?? "-")</td>
+                                        <td>
+                                            @switch (user.Role)
+                                            {
+                                                case AiTeknikServis.Entities.Models.UserRole.Admin:
+                                                    <span class="badge bg-danger"><i class="fas fa-user-shield"></i> Admin</span>
+                                                    break;
+                                                case AiTeknikServis.Entities.Models.UserRole.Manager:
+                                                    <span class="badge bg-warning"><i class="fas fa-user-tie"></i> Manager</span>
+                                                    break;
+                                                case AiTeknikServis.Entities.Models.UserRole.Technician:
+                                                    <span class="badge bg-success"><i class="fas fa-tools"></i> Teknisyen</span>
+                                                    break;
+                                                case AiTeknikServis.Entities.Models.UserRole.Customer:
+                                                    <span class="badge bg-primary"><i class="fas fa-users"></i> Müşteri</span>
+                                                    break;
+                                            }
+                                        </td>
+                                        <td>@user.CreatedDate.ToString("dd.MM.yyyy HH:mm")</td>
+                                        <td>
+                                            @if (user.IsActive)
+                                            {
+                                                <span class="badge bg-success"><i class="fas fa-check"></i> Aktif</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-secondary"><i class="fas fa-times"></i> Pasif</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm" role="group">
+                                                @if (user.Role == AiTeknikServis.Entities.Models.UserRole.Technician)
+                                                {
+                                                    var technician = user as AiTeknikServis.Entities.Models.Technician;
+                                                    <button type="button" class="btn btn-info" data-bs-toggle="tooltip" title="Uzmanlık: @(technician?.Specializations ?? "Belirtilmemiş")">
+                                                        <i class="fas fa-info"></i>
+                                                    </button>
+                                                    
+                                                    <form asp-action="ToggleTechnicianStatus" asp-route-id="@user.Id" method="post" style="display: inline;" 
+                                                          onsubmit="return confirm('@(technician?.IsActive == true ? "Bu teknisyeni pasifleştirmek istediğinizden emin misiniz?" : "Bu teknisyeni aktifleştirmek istediğinizden emin misiniz?")')">
+                                                        @Html.AntiForgeryToken()
+                                                        <button type="submit" class="btn @(technician?.IsActive == true ? "btn-warning" : "btn-success")" 
+                                                                data-bs-toggle="tooltip" title="@(technician?.IsActive == true ? "Teknisyeni Pasifleştir" : "Teknisyeni Aktifleştir")">
+                                                            <i class="fas @(technician?.IsActive == true ? "fa-user-slash" : "fa-user-check")"></i>
+                                                        </button>
+                                                    </form>
+                                                }
+
+                                                @if (user.Role == AiTeknikServis.Entities.Models.UserRole.Customer)
+                                                {
+                                                    var customer = user as AiTeknikServis.Entities.Models.Customer;
+                                                    <button type="button" class="btn btn-info" data-bs-toggle="tooltip" title="Şirket: @(customer?.CompanyName ?? "Belirtilmemiş")">
+                                                        <i class="fas fa-info"></i>
+                                                    </button>
+                                                }
+                                                @if (user.Role != AiTeknikServis.Entities.Models.UserRole.Admin)
+                                                {
+                                                    <form asp-action="DeleteUser" asp-route-id="@user.Id" method="post" style="display: inline;" onsubmit="return confirm('Bu kullanıcıyı silmek istediğinizden emin misiniz?')">
+                                                        @Html.AntiForgeryToken()
+                                                        <button type="submit" class="btn btn-danger" data-bs-toggle="tooltip" title="Kullanıcıyı Sil">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    </form>
+                                                }
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Teknisyen İş Yükü Özeti -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-bar me-2"></i>
+                        Teknisyen İş Yükü Özeti
+                        <button class="btn btn-sm btn-outline-primary float-end" onclick="loadTechnicianWorkload()">
+                            <i class="fas fa-sync-alt"></i> Yenile
+                        </button>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div id="technicianWorkloadContainer">
+                        <div class="text-center">
+                            <div class="spinner-border" role="status">
+                                <span class="visually-hidden">Yükleniyor...</span>
+                            </div>
+                            <p class="mt-2">Teknisyen iş yükü bilgileri yükleniyor...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+@section Scripts {
+    <script>
+        // Tooltip'leri etkinleştir
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+
+        // Sayfa yüklendiğinde teknisyen iş yükü bilgilerini yükle
+        $(document).ready(function() {
+            loadTechnicianWorkload();
+        });
+
+        // Teknisyen iş yükü bilgilerini yükle
+        function loadTechnicianWorkload() {
+            $('#technicianWorkloadContainer').html(`
+                <div class="text-center">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Yükleniyor...</span>
+                    </div>
+                    <p class="mt-2">Teknisyen iş yükü bilgileri yükleniyor...</p>
+                </div>
+            `);
+
+            $.ajax({
+                url: '@Url.Action("GetDetailedTechnicianWorkload", "Admin", new { area = "Admin" })',
+                type: 'GET',
+                success: function(data) {
+                    displayTechnicianWorkload(data);
+                },
+                error: function(xhr, status, error) {
+                    $('#technicianWorkloadContainer').html(`
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Teknisyen iş yükü bilgileri yüklenirken hata oluştu: ${error}
+                        </div>
+                    `);
+                }
+            });
+        }
+
+        // Teknisyen iş yükü tablosunu göster
+        function displayTechnicianWorkload(workloadData) {
+            if (!workloadData || workloadData.length === 0) {
+                $('#technicianWorkloadContainer').html(`
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Henüz teknisyen iş yükü verisi bulunmuyor.
+                    </div>
+                `);
+                return;
+            }
+
+            let html = `
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Teknisyen</th>
+                                <th>Durum</th>
+                                <th>Bekleyen</th>
+                                <th>Devam Eden</th>
+                                <th>Tamamlanan</th>
+                                <th>Başarı Oranı</th>
+                                <th>Ortalama Süre</th>
+                                <th>Son Aktivite</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            workloadData.forEach(function(technician) {
+                const completionRate = technician.completionRate.toFixed(1);
+                const avgDays = technician.averageCompletionDays.toFixed(1);
+                const lastActivity = technician.lastAssignmentDate ? 
+                    new Date(technician.lastAssignmentDate).toLocaleDateString('tr-TR') : 'Hiç';
+
+                html += `
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="me-2">
+                                    <i class="fas fa-user-cog text-primary"></i>
+                                </div>
+                                <div>
+                                    <strong>${technician.technicianName}</strong>
+                                    <br>
+                                    <small class="text-muted">${technician.specializations || 'Genel'}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge bg-${technician.workloadStatusColor}">
+                                ${technician.workloadStatusText}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge bg-warning">${technician.pendingAssignments}</span>
+                        </td>
+                        <td>
+                            <span class="badge bg-info">${technician.inProgressAssignments}</span>
+                        </td>
+                        <td>
+                            <span class="badge bg-success">${technician.completedAssignments}</span>
+                        </td>
+                        <td>
+                            <div class="progress" style="width: 60px; height: 20px;">
+                                <div class="progress-bar ${completionRate >= 80 ? 'bg-success' : completionRate >= 60 ? 'bg-warning' : 'bg-danger'}" 
+                                     style="width: ${completionRate}%" title="${completionRate}%">
+                                </div>
+                            </div>
+                            <small>${completionRate}%</small>
+                        </td>
+                        <td>
+                            <span class="badge bg-secondary">${avgDays} gün</span>
+                        </td>
+                        <td>
+                            <small>${lastActivity}</small>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            $('#technicianWorkloadContainer').html(html);
+        }
+
+
+    </script>
+}

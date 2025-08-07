@@ -1,0 +1,303 @@
+@model AiTeknikServis.Entities.Dtos.Report.ServiceRequestReportDto
+@{
+    ViewData["Title"] = "Servis Raporu";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2><i class="fas fa-file-alt me-2"></i>Servis Raporu #@Model.ServiceRequestId</h2>
+                    <p class="text-muted mb-0">@Model.Title</p>
+                </div>
+                <div class="btn-group" role="group">
+                    <a asp-action="Details" asp-route-id="@Model.ServiceRequestId" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-1"></i>Detaya Dön
+                    </a>
+                    <a asp-action="DownloadReport" asp-route-id="@Model.ServiceRequestId" class="btn btn-success">
+                        <i class="fas fa-download me-1"></i>PDF İndir
+                    </a>
+                    <button onclick="window.print()" class="btn btn-primary">
+                        <i class="fas fa-print me-1"></i>Yazdır
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body" id="reportContent">
+                    <!-- Rapor Başlığı -->
+                    <div class="text-center mb-4">
+                        <h3 class="fw-bold">SERVİS TALEBİ RAPORU</h3>
+                        <h4 class="text-primary">#@Model.ServiceRequestId</h4>
+                        <p class="text-muted">Rapor Tarihi: @DateTime.Now.ToString("dd.MM.yyyy HH:mm")</p>
+                    </div>
+
+                    <!-- Temel Bilgiler -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h5 class="border-bottom pb-2 mb-3"><i class="fas fa-info-circle me-2"></i>Temel Bilgiler</h5>
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td class="fw-bold" style="width: 40%;">Talep Başlığı:</td>
+                                    <td>@Model.Title</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">Müşteri:</td>
+                                    <td>@Model.CustomerName</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">Telefon:</td>
+                                    <td>@(Model.CustomerPhone ?? "-")</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">Teknisyen:</td>
+                                    <td>@Model.TechnicianName</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">Kategori:</td>
+                                    <td><span class="badge bg-secondary">@Model.CategoryName</span></td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">Öncelik:</td>
+                                    <td>
+                                        <span class="badge @(Model.Priority == AiTeknikServis.Entities.Models.Priority.Critical ? "bg-danger" : 
+                                                              Model.Priority == AiTeknikServis.Entities.Models.Priority.High ? "bg-warning" : 
+                                                              Model.Priority == AiTeknikServis.Entities.Models.Priority.Normal ? "bg-info" : "bg-secondary")">
+                                            @Model.PriorityName
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">Durum:</td>
+                                    <td><span class="badge bg-success">@Model.StatusName</span></td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h5 class="border-bottom pb-2 mb-3"><i class="fas fa-clock me-2"></i>Zaman Bilgileri</h5>
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td class="fw-bold" style="width: 40%;">Oluşturulma:</td>
+                                    <td>@Model.CreatedDate.ToString("dd.MM.yyyy HH:mm")</td>
+                                </tr>
+                                @if (Model.CompletedDate.HasValue)
+                                {
+                                    <tr>
+                                        <td class="fw-bold">Tamamlanma:</td>
+                                        <td>@Model.CompletedDate.Value.ToString("dd.MM.yyyy HH:mm")</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold">Tamamlanma Süresi:</td>
+                                        <td><span class="badge bg-info">@Model.CompletionDays gün</span></td>
+                                    </tr>
+                                }
+                                @if (Model.EstimatedHours.HasValue)
+                                {
+                                    <tr>
+                                        <td class="fw-bold">Tahmini Süre:</td>
+                                        <td>@Model.EstimatedHours.Value saat</td>
+                                    </tr>
+                                }
+                                @if (Model.ActualHours.HasValue)
+                                {
+                                    <tr>
+                                        <td class="fw-bold">Gerçek Süre:</td>
+                                        <td>@Model.ActualHours.Value saat</td>
+                                    </tr>
+                                }
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Maliyet Bilgileri -->
+                    @if (Model.EstimatedCost.HasValue || Model.ActualCost.HasValue)
+                    {
+                        <div class="mb-4">
+                            <h5 class="border-bottom pb-2 mb-3"><i class="fas fa-money-bill-wave me-2"></i>Maliyet Bilgileri</h5>
+                            <div class="row">
+                                @if (Model.EstimatedCost.HasValue)
+                                {
+                                    <div class="col-md-6">
+                                        <div class="card bg-light">
+                                            <div class="card-body text-center">
+                                                <h6 class="card-title">Tahmini Maliyet</h6>
+                                                <h4 class="text-info">₺@Model.EstimatedCost.Value.ToString("N2")</h4>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                                @if (Model.ActualCost.HasValue)
+                                {
+                                    <div class="col-md-6">
+                                        <div class="card bg-light">
+                                            <div class="card-body text-center">
+                                                <h6 class="card-title">Gerçek Maliyet</h6>
+                                                <h4 class="text-success">₺@Model.ActualCost.Value.ToString("N2")</h4>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Açıklama -->
+                    @if (!string.IsNullOrEmpty(Model.Description))
+                    {
+                        <div class="mb-4">
+                            <h5 class="border-bottom pb-2 mb-3"><i class="fas fa-align-left me-2"></i>Sorun Açıklaması</h5>
+                            <p class="text-justify">@Model.Description</p>
+                        </div>
+                    }
+
+                    <!-- Ürün Bilgisi -->
+                    @if (!string.IsNullOrEmpty(Model.ProductInfo))
+                    {
+                        <div class="mb-4">
+                            <h5 class="border-bottom pb-2 mb-3"><i class="fas fa-laptop me-2"></i>Ürün/Cihaz Bilgisi</h5>
+                            <p class="text-justify">@Model.ProductInfo</p>
+                        </div>
+                    }
+
+                    <!-- Çözüm -->
+                    @if (!string.IsNullOrEmpty(Model.Resolution))
+                    {
+                        <div class="mb-4">
+                            <h5 class="border-bottom pb-2 mb-3 text-success"><i class="fas fa-check-circle me-2"></i>Çözüm</h5>
+                            <div class="alert alert-success">
+                                <p class="mb-0 text-justify">@Model.Resolution</p>
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Süreç Hareketleri -->
+                    @if (Model.ProcessMovements.Any())
+                    {
+                        <div class="mb-4">
+                            <h5 class="border-bottom pb-2 mb-3"><i class="fas fa-history me-2"></i>Süreç Hareketleri</h5>
+                            <div class="timeline">
+                                @foreach (var movement in Model.ProcessMovements.OrderBy(m => m.Date))
+                                {
+                                    <div class="timeline-item mb-3">
+                                        <div class="row">
+                                            <div class="col-md-3">
+                                                <small class="text-muted">@movement.Date.ToString("dd.MM.yyyy HH:mm")</small>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <strong>@movement.Action</strong>
+                                                @if (!string.IsNullOrEmpty(movement.Description))
+                                                {
+                                                    <br><small class="text-muted">@movement.Description</small>
+                                                }
+                                            </div>
+                                            <div class="col-md-3">
+                                                @if (!string.IsNullOrEmpty(movement.PerformedBy))
+                                                {
+                                                    <small class="text-info">@movement.PerformedBy</small>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+
+                    <!-- AI Analizi -->
+                    @if (Model.AiAnalyses.Any())
+                    {
+                        <div class="mb-4">
+                            <h5 class="border-bottom pb-2 mb-3 text-info"><i class="fas fa-robot me-2"></i>Yapay Zeka Analizi</h5>
+                            @foreach (var analysis in Model.AiAnalyses)
+                            {
+                                <div class="card mb-2">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <span class="badge bg-primary">Güven Skoru: %@((analysis.ConfidenceScore * 100).ToString("F0"))</span>
+                                            <small class="text-muted">@analysis.CreatedDate.ToString("dd.MM.yyyy HH:mm")</small>
+                                        </div>
+                                        <p class="mb-0">@analysis.Recommendation</p>
+                                        @if (!string.IsNullOrEmpty(analysis.SuggestedTechnician))
+                                        {
+                                            <small class="text-info">Önerilen Teknisyen: @analysis.SuggestedTechnician</small>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+
+                    <!-- AI Rapor Değerlendirmesi -->
+                    @if (!string.IsNullOrEmpty(Model.AiReportSummary))
+                    {
+                        <div class="mb-4">
+                            <h5 class="border-bottom pb-2 mb-3 text-warning"><i class="fas fa-brain me-2"></i>Yapay Zeka Rapor Değerlendirmesi</h5>
+                            <div class="alert alert-warning">
+                                <div class="text-justify" style="white-space: pre-line;">@Model.AiReportSummary</div>
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Rapor Alt Bilgi -->
+                    <div class="text-center mt-5 pt-4 border-top">
+                        <small class="text-muted">
+                            Bu rapor @DateTime.Now.ToString("dd.MM.yyyy HH:mm") tarihinde otomatik olarak oluşturulmuştur.<br>
+                            AI Teknik Servis Yönetim Sistemi
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    @@media print {
+        .btn-group, .no-print {
+            display: none !important;
+        }
+        
+        .card {
+            border: none !important;
+            box-shadow: none !important;
+        }
+        
+        .timeline-item {
+            page-break-inside: avoid;
+        }
+        
+        h5 {
+            page-break-after: avoid;
+        }
+        
+        .alert {
+            page-break-inside: avoid;
+        }
+    }
+    
+    .timeline-item {
+        border-left: 2px solid #dee2e6;
+        padding-left: 15px;
+        position: relative;
+    }
+    
+    .timeline-item::before {
+        content: '';
+        position: absolute;
+        left: -6px;
+        top: 8px;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background-color: #007bff;
+    }
+    
+    .text-justify {
+        text-align: justify;
+    }
+</style>

@@ -1,0 +1,145 @@
+@model AiTeknikServis.Entities.Dtos.EmailVerification.EmailVerificationVerifyDto
+@{
+    ViewData["Title"] = "Email Doğrulama";
+    var email = ViewBag.Email as string;
+    var typeDisplayName = ViewBag.TypeDisplayName as string;
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-envelope-open-text me-2"></i>
+                        Email Doğrulama
+                    </h4>
+                </div>
+                <div class="card-body">
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="fas fa-check-circle me-2"></i>
+                            @TempData["SuccessMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            @TempData["ErrorMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    <div class="text-center mb-4">
+                        <i class="fas fa-envelope fa-3x text-primary mb-3"></i>
+                        <h5>@typeDisplayName Doğrulaması</h5>
+                        <p class="text-muted">
+                            <strong>@email</strong> adresine gönderilen 6 haneli doğrulama kodunu giriniz.
+                        </p>
+                    </div>
+
+                    <form asp-action="VerifyEmail" method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                        
+                        <input type="hidden" asp-for="Email" value="@email" />
+                        <input type="hidden" asp-for="Type" value="@ViewBag.Type" />
+
+                        <div class="mb-3">
+                            <label asp-for="VerificationCode" class="form-label">Doğrulama Kodu</label>
+                            <input asp-for="VerificationCode" 
+                                   class="form-control form-control-lg text-center" 
+                                   placeholder="000000" 
+                                   maxlength="6" 
+                                   style="letter-spacing: 0.5em; font-size: 1.5rem;"
+                                   autocomplete="off" />
+                            <span asp-validation-for="VerificationCode" class="text-danger"></span>
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                6 haneli sayısal kodu giriniz
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-check me-2"></i>
+                                Doğrula
+                            </button>
+                        </div>
+                    </form>
+
+                    <hr class="my-4">
+
+                    <div class="text-center">
+                        <p class="text-muted mb-2">Kod gelmedi mi?</p>
+                        <form asp-action="ResendVerificationCode" method="post" class="d-inline">
+                            <input type="hidden" name="email" value="@email" />
+                            <input type="hidden" name="type" value="@ViewBag.Type" />
+                            <button type="submit" class="btn btn-outline-secondary btn-sm">
+                                <i class="fas fa-redo me-1"></i>
+                                Yeniden Gönder
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="mt-4">
+                        <div class="alert alert-info" role="alert">
+                            <i class="fas fa-clock me-2"></i>
+                            <strong>Önemli:</strong>
+                            <ul class="mb-0 mt-2">
+                                <li>Doğrulama kodu 15 dakika geçerlidir</li>
+                                <li>En fazla 3 kez yanlış kod girebilirsiniz</li>
+                                <li>Spam klasörünüzü kontrol etmeyi unutmayın</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-3">
+                <a href="@Url.Action("Register", "Account")" class="text-muted">
+                    <i class="fas fa-arrow-left me-1"></i>
+                    Kayıt sayfasına dön
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Doğrulama kodu input'una sadece rakam girişi
+            $('#VerificationCode').on('input', function() {
+                this.value = this.value.replace(/[^0-9]/g, '');
+            });
+
+            // Otomatik focus ve format
+            $('#VerificationCode').on('keyup', function() {
+                var value = $(this).val();
+                if (value.length === 6) {
+                    $(this).addClass('is-valid');
+                } else {
+                    $(this).removeClass('is-valid');
+                }
+            });
+
+            // Form submit'te loading göster
+            $('form').on('submit', function() {
+                var submitBtn = $(this).find('button[type="submit"]');
+                submitBtn.prop('disabled', true);
+                submitBtn.html('<i class="fas fa-spinner fa-spin me-2"></i>Doğrulanıyor...');
+            });
+
+            // Yeniden gönder butonuna loading ekle
+            $('form[action*="ResendVerificationCode"]').on('submit', function() {
+                var submitBtn = $(this).find('button[type="submit"]');
+                submitBtn.prop('disabled', true);
+                submitBtn.html('<i class="fas fa-spinner fa-spin me-1"></i>Gönderiliyor...');
+            });
+        });
+    </script>
+}

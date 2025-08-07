@@ -1,0 +1,32 @@
+
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset='utf-8'>
+                    <title>Servis Talebiniz Alındı</title>
+                </head>
+                <body style='font-family: Arial, sans-serif; line-height: 1.6; color: #333;'>
+                    <div style='max-width: 600px; margin: 0 auto; padding: 20px;'>
+                        <div style='background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;'>
+                            <h2 style='color: #007bff; margin: 0;'>Merhaba {CustomerName},</h2>
+                        </div>
+                        
+                        <div style='background: white; padding: 20px; border: 1px solid #e9ecef; border-radius: 8px;'>
+                            <p>'{RequestTitle}' başlıklı servis talebiniz başarıyla alındı.</p>
+                            
+                            <table style='width: 100%; margin: 20px 0;'>
+                                <tr><td style='padding: 8px; background: #f8f9fa;'><strong>Talep Numarası:</strong></td><td style='padding: 8px;'>#{RequestId}</td></tr>
+                                <tr><td style='padding: 8px; background: #f8f9fa;'><strong>Kategori:</strong></td><td style='padding: 8px;'>{Category}</td></tr>
+                                <tr><td style='padding: 8px; background: #f8f9fa;'><strong>Öncelik:</strong></td><td style='padding: 8px;'>{Priority}</td></tr>
+                                <tr><td style='padding: 8px; background: #f8f9fa;'><strong>Oluşturulma Tarihi:</strong></td><td style='padding: 8px;'>{CreatedDate}</td></tr>
+                            </table>
+                            
+                            <p>En kısa sürede size dönüş yapılacaktır. Talep durumunuzu web panelimizden takip edebilirsiniz.</p>
+                        </div>
+                        
+                        <div style='margin-top: 20px; padding: 20px; background: #f8f9fa; border-radius: 8px; text-align: center;'>
+                            <p style='margin: 0;'>Teşekkürler,<br><strong>AI Teknik Servis Ekibi</strong></p>
+                        </div>
+                    </div>
+                </body>
+                </html>

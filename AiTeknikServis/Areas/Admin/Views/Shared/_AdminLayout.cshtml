@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - AI Teknik Servis Admin</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/AiTeknikServis.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <style>
+        .admin-sidebar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        }
+        .admin-sidebar .nav-link {
+            color: rgba(255,255,255,0.8);
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin: 5px 10px;
+            transition: all 0.3s ease;
+        }
+        .admin-sidebar .nav-link:hover,
+        .admin-sidebar .nav-link.active {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            transform: translateX(5px);
+        }
+        .admin-header {
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 15px 0;
+        }
+        .admin-content {
+            background: #f8f9fa;
+            min-height: calc(100vh - 70px);
+            padding: 20px;
+        }
+        .admin-brand {
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+            text-decoration: none;
+            padding: 20px;
+            display: block;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .admin-brand:hover {
+            color: white;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Admin Sidebar -->
+            <nav class="col-md-2 d-none d-md-block admin-sidebar">
+                <div class="position-sticky">
+                    <a href="@Url.Action("Dashboard", "Admin", new { area = "Admin" })" class="admin-brand">
+                        <i class="fas fa-shield-alt"></i> Admin Panel
+                    </a>
+                    
+                    <ul class="nav flex-column mt-3">
+                        <li class="nav-item">
+                            <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Dashboard" ? "active" : "")" 
+                               href="@Url.Action("Dashboard", "Admin", new { area = "Admin" })">
+                                <i class="fas fa-tachometer-alt"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Users" ? "active" : "")" 
+                               href="@Url.Action("Users", "Admin", new { area = "Admin" })">
+                                <i class="fas fa-users"></i> Kullanıcı Yönetimi
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "CreateManager" ? "active" : "")" 
+                               href="@Url.Action("CreateManager", "Admin", new { area = "Admin" })">
+                                <i class="fas fa-user-plus"></i> Manager Oluştur
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "CreateTechnician" ? "active" : "")" 
+                               href="@Url.Action("CreateTechnician", "Admin", new { area = "Admin" })">
+                                <i class="fas fa-user-cog"></i> Teknisyen Oluştur
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "ServiceRequest" ? "active" : "")" 
+                               href="@Url.Action("Index", "ServiceRequest", new { area = "Admin" })">
+                                <i class="fas fa-ticket-alt"></i> Servis Talepleri
+                            </a>
+                        </li>
+                        <li class="nav-item mt-3">
+                            <hr style="border-color: rgba(255,255,255,0.2);">
+                        </li>
+                        <li class="nav-item">
+                            <form asp-area="" asp-controller="Account" asp-action="Logout" method="post" class="nav-item">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="nav-link btn btn-link text-start w-100" style="color: rgba(255,255,255,0.8);">
+                                    <i class="fas fa-sign-out-alt"></i> Çıkış Yap
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- Main Content -->
+            <main class="col-md-10 ms-sm-auto admin-content">
+                <!-- Admin Header -->
+                <div class="admin-header mb-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h4 class="mb-0">@ViewData["Title"]</h4>
+                            <small class="text-muted">AI Teknik Servis Yönetim Sistemi</small>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <span class="me-3">
+                                <i class="fas fa-user-circle"></i> 
+                                Hoş geldiniz, <strong>@User.Identity?.Name</strong>
+                            </span>
+                            <span class="badge bg-danger">
+                                <i class="fas fa-shield-alt"></i> Admin
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Page Content -->
+                @RenderBody()
+            </main>
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

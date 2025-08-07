@@ -1,0 +1,241 @@
+﻿@{
+    ViewData["Title"] = "Ana Sayfa";
+}
+
+@section Styles {
+    <style>
+        .hero-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 100px 0;
+            margin-top: -24px;
+        }
+        
+        .feature-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: none;
+            border-radius: 15px;
+            overflow: hidden;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: #667eea;
+        }
+        
+        .stats-section {
+            background: #f8f9fa;
+            padding: 80px 0;
+        }
+        
+        .stat-card {
+            text-align: center;
+            padding: 2rem;
+        }
+        
+        .stat-number {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .cta-section {
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+            color: white;
+            padding: 80px 0;
+        }
+        
+        .btn-custom {
+            background: white;
+            color: #667eea;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-custom:hover {
+            background: #f8f9fa;
+            color: #764ba2;
+            transform: translateY(-2px);
+        }
+        
+        .service-badge {
+            background: rgba(255,255,255,0.1);
+            padding: 8px 16px;
+            border-radius: 20px;
+            margin: 5px;
+            display: inline-block;
+        }
+    </style>
+}
+
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="display-3 fw-bold mb-4">AI Teknik Servis</h1>
+                <p class="lead mb-4">Yapay zeka destekli teknik servis yönetim sistemi ile işlerinizi kolaylaştırın. Hızlı, güvenilir ve profesyonel çözümler.</p>
+                <div class="d-flex flex-wrap gap-2 mb-4">
+                    <span class="service-badge"><i class="fas fa-laptop me-2"></i>Bilgisayar Tamiri</span>
+                    <span class="service-badge"><i class="fas fa-network-wired me-2"></i>Ağ Kurulumu</span>
+                    <span class="service-badge"><i class="fas fa-shield-alt me-2"></i>Güvenlik Sistemleri</span>
+                    <span class="service-badge"><i class="fas fa-tools me-2"></i>Bakım Hizmetleri</span>
+                </div>
+                @if (!User.Identity.IsAuthenticated)
+                {
+                    <div class="d-flex gap-3">
+                        <a href="@Url.Action("Register", "Account")" class="btn btn-custom btn-lg">
+                            <i class="fas fa-user-plus me-2"></i>Hemen Başlayın
+                        </a>
+                        <a href="@Url.Action("Login", "Account")" class="btn btn-outline-light btn-lg">
+                            <i class="fas fa-sign-in-alt me-2"></i>Giriş Yapın
+                        </a>
+                    </div>
+                }
+            </div>
+            <div class="col-lg-6 text-center">
+                <i class="fas fa-cogs" style="font-size: 15rem; opacity: 0.3;"></i>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row text-center mb-5">
+            <div class="col-12">
+                <h2 class="display-5 fw-bold mb-3">Neden Bizi Seçmelisiniz?</h2>
+                <p class="lead text-muted">Modern teknoloji ve deneyimli ekibimizle size en iyi hizmeti sunuyoruz</p>
+            </div>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card feature-card h-100 text-center p-4">
+                    <div class="feature-icon">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <h4 class="fw-bold mb-3">AI Destekli Sistem</h4>
+                    <p class="text-muted">Yapay zeka teknolojisi ile sorunlarınızı daha hızlı tespit ediyor ve çözüm öneriyoruz.</p>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card feature-card h-100 text-center p-4">
+                    <div class="feature-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <h4 class="fw-bold mb-3">7/24 Destek</h4>
+                    <p class="text-muted">Teknik sorunlarınız için 7 gün 24 saat kesintisiz destek hizmeti sunuyoruz.</p>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card feature-card h-100 text-center p-4">
+                    <div class="feature-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <h4 class="fw-bold mb-3">Uzman Ekip</h4>
+                    <p class="text-muted">Alanında uzman teknisyenlerimiz ile kaliteli ve güvenilir hizmet garantisi.</p>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card feature-card h-100 text-center p-4">
+                    <div class="feature-icon">
+                        <i class="fas fa-mobile-alt"></i>
+                    </div>
+                    <h4 class="fw-bold mb-3">Mobil Uyumlu</h4>
+                    <p class="text-muted">Tüm cihazlardan kolayca erişebileceğiniz responsive tasarım.</p>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card feature-card h-100 text-center p-4">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h4 class="fw-bold mb-3">Anlık Takip</h4>
+                    <p class="text-muted">Servis taleplerini anlık olarak takip edebilir, durumunu görebilirsiniz.</p>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card feature-card h-100 text-center p-4">
+                    <div class="feature-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h4 class="fw-bold mb-3">Güvenli Sistem</h4>
+                    <p class="text-muted">Verileriniz en yüksek güvenlik standartları ile korunmaktadır.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Stats Section -->
+<section class="stats-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-number">500+</div>
+                    <h5>Mutlu Müşteri</h5>
+                    <p class="text-muted">Memnun müşteri sayımız</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-number">1000+</div>
+                    <h5>Tamamlanan Proje</h5>
+                    <p class="text-muted">Başarıyla tamamlanan işler</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-number">24/7</div>
+                    <h5>Destek Hizmeti</h5>
+                    <p class="text-muted">Kesintisiz teknik destek</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-number">%99</div>
+                    <h5>Başarı Oranı</h5>
+                    <p class="text-muted">Sorun çözme başarımız</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+@if (!User.Identity.IsAuthenticated)
+{
+    <section class="cta-section">
+        <div class="container text-center">
+            <div class="row">
+                <div class="col-lg-8 mx-auto">
+                    <h2 class="display-5 fw-bold mb-4">Hemen Başlayın!</h2>
+                    <p class="lead mb-4">Teknik sorunlarınız için profesyonel destek almaya hazır mısınız? Ücretsiz hesap oluşturun ve hizmetlerimizden yararlanmaya başlayın.</p>
+                    <a href="@Url.Action("Register", "Account")" class="btn btn-custom btn-lg me-3">
+                        <i class="fas fa-rocket me-2"></i>Ücretsiz Hesap Oluştur
+                    </a>
+                    <a href="#" class="btn btn-outline-light btn-lg">
+                        <i class="fas fa-phone me-2"></i>Bizi Arayın
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+}

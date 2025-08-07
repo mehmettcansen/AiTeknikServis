@@ -1,0 +1,415 @@
+@model List<AiTeknikServis.Entities.Dtos.ServiceRequest.ServiceRequestResponseDto>
+@{
+    ViewData["Title"] = "Tüm Talepler";
+}
+
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-clipboard-list me-2"></i>Tüm Servis Talepleri</h2>
+            <div>
+                <div class="btn-group" role="group">
+                    <input type="radio" class="btn-check" name="statusFilter" id="all" value="all" checked>
+                    <label class="btn btn-outline-primary" for="all">Tümü</label>
+
+                    <input type="radio" class="btn-check" name="statusFilter" id="pending" value="pending">
+                    <label class="btn btn-outline-warning" for="pending">Bekleyen</label>
+
+                    <input type="radio" class="btn-check" name="statusFilter" id="inprogress" value="inprogress">
+                    <label class="btn btn-outline-info" for="inprogress">İşlemde</label>
+
+                    <input type="radio" class="btn-check" name="statusFilter" id="completed" value="completed">
+                    <label class="btn btn-outline-success" for="completed">Tamamlandı</label>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Requests Table -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-list me-2"></i>Servis Talepleri (@Model.Count)</h5>
+            </div>
+            <div class="card-body">
+                @if (Model.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="requestsTable">
+                            <thead>
+                                <tr>
+                                    <th>Talep No</th>
+                                    <th>Müşteri</th>
+                                    <th>Başlık</th>
+                                    <th>Kategori</th>
+                                    <th>Öncelik</th>
+                                    <th>Durum</th>
+                                    <th>Teknisyen</th>
+                                    <th>Oluşturma Tarihi</th>
+                                    <th>İşlem</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var request in Model)
+                                {
+                                    <tr data-status="@request.Status.ToString().ToLower()">
+                                        <td><strong>#@request.Id</strong></td>
+                                        <td>@request.CustomerName</td>
+                                        <td>@request.Title</td>
+                                        <td>
+                                            <span class="badge bg-secondary">@request.Category.ToString()</span>
+                                        </td>
+                                        <td>
+                                            <span class="badge @(request.Priority == AiTeknikServis.Entities.Models.Priority.High ? "bg-danger" : 
+                                                                 request.Priority == AiTeknikServis.Entities.Models.Priority.Critical ? "bg-danger" :
+                                                                 request.Priority == AiTeknikServis.Entities.Models.Priority.Normal ? "bg-warning" : "bg-info")">
+                                                @request.Priority.ToString()
+                                            </span>
+                                        </td>
+                                        <td>
+                                            @switch (request.Status)
+                                            {
+                                                case AiTeknikServis.Entities.Models.ServiceStatus.Pending:
+                                                    <span class="badge bg-warning"><i class="fas fa-clock me-1"></i>Bekleyen</span>
+                                                    break;
+                                                case AiTeknikServis.Entities.Models.ServiceStatus.InProgress:
+                                                    <span class="badge bg-primary"><i class="fas fa-spinner me-1"></i>İşlemde</span>
+                                                    break;
+                                                case AiTeknikServis.Entities.Models.ServiceStatus.Completed:
+                                                    <span class="badge bg-success"><i class="fas fa-check me-1"></i>Tamamlandı</span>
+                                                    break;
+                                                case AiTeknikServis.Entities.Models.ServiceStatus.Cancelled:
+                                                    <span class="badge bg-danger"><i class="fas fa-times me-1"></i>İptal</span>
+                                                    break;
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (!string.IsNullOrEmpty(request.TechnicianName))
+                                            {
+                                                <span class="badge bg-info">@request.TechnicianName</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">Atanmadı</span>
+                                            }
+                                        </td>
+                                        <td>@request.CreatedDate.ToString("dd.MM.yyyy HH:mm")</td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <a asp-controller="ServiceRequest" asp-action="Details" asp-route-id="@request.Id" 
+                                                   class="btn btn-sm btn-outline-primary" title="Detayları Görüntüle">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                @if (request.Status == AiTeknikServis.Entities.Models.ServiceStatus.Pending)
+                                                {
+                                                    <button class="btn btn-sm btn-outline-success" 
+                                                            onclick="showAssignModal(@request.Id, '@request.Title')" title="Teknisyen Ata">
+                                                        <i class="fas fa-user-plus"></i>
+                                                    </button>
+                                                }
+                                                @if (!string.IsNullOrEmpty(request.TechnicianName) && request.Status != AiTeknikServis.Entities.Models.ServiceStatus.Completed)
+                                                {
+                                                    <button class="btn btn-sm btn-outline-warning" 
+                                                            onclick="showReassignModal(@request.Id, '@request.Title', '@request.TechnicianName')" title="Teknisyen Değiştir">
+                                                        <i class="fas fa-exchange-alt"></i>
+                                                    </button>
+                                                }
+                                                <form asp-action="DeleteRequest" asp-route-id="@request.Id" method="post" style="display: inline;" 
+                                                      onsubmit="return confirm('Bu talebi silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.')">
+                                                    @Html.AntiForgeryToken()
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Sil">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-5">
+                        <i class="fas fa-clipboard-list fa-3x text-muted mb-3"></i>
+                        <h4 class="text-muted">Henüz talep bulunmuyor</h4>
+                        <p class="text-muted">Müşteri talepleri burada görünecektir.</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Assign Technician Modal -->
+<div class="modal fade" id="assignModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Teknisyen Ata</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="assignForm">
+                    <input type="hidden" id="serviceRequestId" />
+                    <div class="mb-3">
+                        <label class="form-label">Talep</label>
+                        <p id="requestTitle" class="form-control-plaintext"></p>
+                    </div>
+                    <div class="mb-3">
+                        <label for="technicianSelect" class="form-label">Teknisyen Seç</label>
+                        <select class="form-select" id="technicianSelect" required>
+                            <option value="">Teknisyen seçin...</option>
+                        </select>
+                        <div class="form-text">
+                            <i class="fas fa-lightbulb text-warning"></i> 
+                            <strong>Önerilen teknisyenler</strong> talep kategorisine uygun uzmanlık alanına sahip olanlar listede üstte görünür.
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="assignNotes" class="form-label">Notlar (İsteğe bağlı)</label>
+                        <textarea class="form-control" id="assignNotes" rows="3" placeholder="Atama ile ilgili notlar..."></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                <button type="button" class="btn btn-primary" onclick="assignTechnician()">Ata</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reassign Technician Modal -->
+<div class="modal fade" id="reassignModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Teknisyen Yeniden Ata</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="reassignForm">
+                    <input type="hidden" id="reassignServiceRequestId" />
+                    <input type="hidden" id="currentTechnicianId" />
+                    <div class="mb-3">
+                        <label class="form-label">Talep</label>
+                        <p id="reassignRequestTitle" class="form-control-plaintext"></p>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Mevcut Teknisyen</label>
+                        <p id="currentTechnicianName" class="form-control-plaintext text-muted"></p>
+                    </div>
+                    <div class="mb-3">
+                        <label for="newTechnicianSelect" class="form-label">Yeni Teknisyen</label>
+                        <select class="form-select" id="newTechnicianSelect" required>
+                            <option value="">Yeni teknisyen seçin...</option>
+                        </select>
+                        <div class="form-text">
+                            <i class="fas fa-lightbulb text-warning"></i> 
+                            <strong>Önerilen teknisyenler</strong> talep kategorisine uygun uzmanlık alanına sahip olanlar listede üstte görünür.
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="reassignReason" class="form-label">Yeniden Atama Nedeni</label>
+                        <textarea class="form-control" id="reassignReason" rows="3" placeholder="Neden yeniden atanıyor?" required></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                <button type="button" class="btn btn-warning" onclick="reassignTechnician()">Yeniden Ata</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Status filtering
+        document.querySelectorAll('input[name="statusFilter"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                const filterValue = this.value;
+                const rows = document.querySelectorAll('#requestsTable tbody tr');
+                
+                rows.forEach(row => {
+                    if (filterValue === 'all') {
+                        row.style.display = '';
+                    } else {
+                        const status = row.getAttribute('data-status');
+                        row.style.display = status === filterValue ? '' : 'none';
+                    }
+                });
+            });
+        });
+
+        // Load technicians when modals open
+        document.getElementById('assignModal').addEventListener('show.bs.modal', function() {
+            const requestId = document.getElementById('serviceRequestId').value;
+            loadTechnicians('technicianSelect', requestId);
+        });
+
+        document.getElementById('reassignModal').addEventListener('show.bs.modal', function() {
+            const requestId = document.getElementById('reassignServiceRequestId').value;
+            const currentTechnicianId = document.getElementById('currentTechnicianId').value;
+            loadTechnicians('newTechnicianSelect', requestId, currentTechnicianId);
+        });
+
+        function showAssignModal(requestId, title) {
+            document.getElementById('serviceRequestId').value = requestId;
+            document.getElementById('requestTitle').textContent = title;
+            document.getElementById('assignNotes').value = '';
+            new bootstrap.Modal(document.getElementById('assignModal')).show();
+        }
+
+        function showReassignModal(requestId, title) {
+            // Mevcut teknisyen bilgisini al
+            const row = event.target.closest('tr');
+            const currentTechnicianName = row.querySelector('.badge.bg-info')?.textContent || 'Bilinmiyor';
+            
+            // Mevcut teknisyen ID'sini almak için AJAX çağrısı yap
+            $.get('@Url.Action("GetServiceRequestDetails", "Manager")', { id: requestId })
+                .done(function(response) {
+                    document.getElementById('reassignServiceRequestId').value = requestId;
+                    document.getElementById('reassignRequestTitle').textContent = title;
+                    document.getElementById('currentTechnicianName').textContent = currentTechnicianName;
+                    document.getElementById('currentTechnicianId').value = response.assignedTechnicianId || '';
+                    document.getElementById('reassignReason').value = '';
+                    new bootstrap.Modal(document.getElementById('reassignModal')).show();
+                })
+                .fail(function() {
+                    // Fallback: Teknisyen ID'si olmadan modal aç
+                    document.getElementById('reassignServiceRequestId').value = requestId;
+                    document.getElementById('reassignRequestTitle').textContent = title;
+                    document.getElementById('currentTechnicianName').textContent = currentTechnicianName;
+                    document.getElementById('currentTechnicianId').value = '';
+                    document.getElementById('reassignReason').value = '';
+                    new bootstrap.Modal(document.getElementById('reassignModal')).show();
+                });
+        }
+
+        function loadTechnicians(selectId, serviceRequestId = null, excludeTechnicianId = null) {
+            const select = document.getElementById(selectId);
+            select.innerHTML = '<option value="">Yükleniyor...</option>';
+            
+            let url = '@Url.Action("GetTechnicians", "Manager")';
+            let params = {};
+            
+            if (serviceRequestId) params.serviceRequestId = serviceRequestId;
+            if (excludeTechnicianId) params.excludeTechnicianId = excludeTechnicianId;
+            
+            $.get(url, params)
+                .done(function(technicians) {
+                    select.innerHTML = '<option value="">Teknisyen seçin...</option>';
+                    
+                    technicians.forEach(tech => {
+                        const option = document.createElement('option');
+                        option.value = tech.id;
+                        
+                        let displayText = tech.name;
+                        
+                        // Önerilen teknisyenler için ⭐ işareti ekle
+                        if (tech.isRecommended) {
+                            displayText = '⭐ ' + displayText;
+                            option.style.fontWeight = 'bold';
+                            option.style.color = '#0d6efd';
+                        }
+                        
+                        // Uzmanlık alanı ekle
+                        if (tech.specializations && tech.specializations !== 'Genel') {
+                            displayText += ` - ${tech.specializations}`;
+                        }
+                        
+                        // Tüm teknisyenler müsait kabul edilir
+                        
+                        option.textContent = displayText;
+                        select.appendChild(option);
+                    });
+                })
+                .fail(function() {
+                    select.innerHTML = '<option value="">Hata: Teknisyenler yüklenemedi</option>';
+                });
+        }
+
+        function assignTechnician() {
+            const requestId = document.getElementById('serviceRequestId').value;
+            const technicianId = document.getElementById('technicianSelect').value;
+            const notes = document.getElementById('assignNotes').value;
+            
+            if (!technicianId) {
+                alert('Lütfen bir teknisyen seçin.');
+                return;
+            }
+
+            $.post('@Url.Action("AssignTechnician", "Manager")', {
+                serviceRequestId: requestId,
+                technicianId: technicianId,
+                notes: notes,
+                __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+            })
+            .done(function(response) {
+                if (response.success) {
+                    bootstrap.Modal.getInstance(document.getElementById('assignModal')).hide();
+                    location.reload();
+                } else {
+                    alert('Hata: ' + response.message);
+                }
+            })
+            .fail(function() {
+                alert('Bir hata oluştu.');
+            });
+        }
+
+        function reassignTechnician() {
+            const requestId = document.getElementById('reassignServiceRequestId').value;
+            const newTechnicianId = document.getElementById('newTechnicianSelect').value;
+            const reason = document.getElementById('reassignReason').value;
+            
+            if (!newTechnicianId) {
+                alert('Lütfen yeni bir teknisyen seçin.');
+                return;
+            }
+            
+            if (!reason.trim()) {
+                alert('Lütfen yeniden atama nedenini belirtin.');
+                return;
+            }
+
+            if (confirm('Bu talebi yeni teknisyene yeniden atamak istediğinizden emin misiniz?')) {
+                // Önce mevcut atamayı bul ve yeniden ata
+                $.get('@Url.Action("GetActiveAssignmentId", "Manager")', { serviceRequestId: requestId })
+                    .done(function(response) {
+                        if (response.success && response.assignmentId) {
+                            $.post('@Url.Action("ReassignTechnician", "Manager")', {
+                                assignmentId: response.assignmentId,
+                                newTechnicianId: newTechnicianId,
+                                reason: reason,
+                                __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                            })
+                            .done(function(response) {
+                                if (response.success) {
+                                    bootstrap.Modal.getInstance(document.getElementById('reassignModal')).hide();
+                                    location.reload();
+                                } else {
+                                    alert('Hata: ' + response.message);
+                                }
+                            })
+                            .fail(function() {
+                                alert('Yeniden atama sırasında bir hata oluştu.');
+                            });
+                        } else {
+                            alert('Aktif atama bulunamadı.');
+                        }
+                    })
+                    .fail(function() {
+                        alert('Atama bilgisi alınamadı.');
+                    });
+            }
+        }
+    </script>
+}
+
+@Html.AntiForgeryToken()

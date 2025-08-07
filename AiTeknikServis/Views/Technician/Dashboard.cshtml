@@ -1,0 +1,197 @@
+@using AiTeknikServis.Entities.Models
+@model AiTeknikServis.Entities.Dtos.Dashboard.TechnicianDashboardDto
+@{
+    ViewData["Title"] = "Teknisyen Dashboard";
+}
+
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-tools me-2"></i>Teknisyen Dashboard</h2>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">@Model.TotalAssignments</h4>
+                        <p class="card-text">Toplam Atama</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-tasks fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">@Model.PendingAssignments</h4>
+                        <p class="card-text">Bekleyen</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-clock fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">@Model.InProgressAssignments</h4>
+                        <p class="card-text">Devam Eden</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-spinner fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">@Model.CompletedToday</h4>
+                        <p class="card-text">Bugün Tamamlanan</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-check fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Active Assignments -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-list me-2"></i>Aktif Atamalarım</h5>
+            </div>
+            <div class="card-body">
+                @if (Model.ActiveServiceRequests.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Talep No</th>
+                                    <th>Müşteri</th>
+                                    <th>Başlık</th>
+                                    <th>Öncelik</th>
+                                    <th>Durum</th>
+                                    <th>Oluşturma Tarihi</th>
+                                    <th>İşlem</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var request in Model.ActiveServiceRequests)
+                                {
+                                    <tr>
+                                        <td><strong>#@request.Id</strong></td>
+                                        <td>@request.CustomerName</td>
+                                        <td>@request.Title</td>
+                                        <td>
+                                            <span class="badge @(request.Priority == Priority.Critical ? "bg-danger" : 
+                                                                 request.Priority == Priority.High ? "bg-warning" :
+                                                                 request.Priority == Priority.Normal ? "bg-info" : "bg-secondary")">
+                                                @switch (request.Priority)
+                                                {
+                                                    case Priority.Critical:
+                                                        <i class="fas fa-exclamation-triangle me-1"></i>@("Kritik")
+                                                        break;
+                                                    case Priority.High:
+                                                        <i class="fas fa-arrow-up me-1"></i>@("Yüksek")
+                                                        break;
+                                                    case Priority.Normal:
+                                                        <i class="fas fa-minus me-1"></i>@("Normal")
+                                                        break;
+                                                    case Priority.Low:
+                                                        <i class="fas fa-arrow-down me-1"></i>@("Düşük")
+                                                        break;
+                                                }
+                                            </span>
+                                        </td>
+                                        <td>
+                                            @switch (request.Status)
+                                            {
+                                                case ServiceStatus.Pending:
+                                                    <span class="badge bg-warning"><i class="fas fa-clock me-1"></i>Beklemede</span>
+                                                    break;
+                                                case ServiceStatus.InProgress:
+                                                    <span class="badge bg-primary"><i class="fas fa-cog me-1"></i>İşlemde</span>
+                                                    break;
+                                                case ServiceStatus.OnHold:
+                                                    <span class="badge bg-secondary"><i class="fas fa-pause me-1"></i>Bekletildi</span>
+                                                    break;
+                                                case ServiceStatus.Completed:
+                                                    <span class="badge bg-success"><i class="fas fa-check me-1"></i>Tamamlandı</span>
+                                                    break;
+                                                case ServiceStatus.Cancelled:
+                                                    <span class="badge bg-danger"><i class="fas fa-times me-1"></i>İptal Edildi</span>
+                                                    break;
+                                                case ServiceStatus.Rejected:
+                                                    <span class="badge bg-danger"><i class="fas fa-ban me-1"></i>Reddedildi</span>
+                                                    break;
+                                            }
+                                        </td>
+                                        <td>@request.CreatedDate.ToString("dd.MM.yyyy")</td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <a asp-controller="ServiceRequest" asp-action="Details" asp-route-id="@request.Id" 
+                                                   class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                @if (request.Status == ServiceStatus.Pending && !string.IsNullOrEmpty(request.TechnicianName))
+                                                {
+                                                    <form asp-controller="ServiceRequest" asp-action="UpdateStatus" method="post" style="display: inline;">
+                                                        @Html.AntiForgeryToken()
+                                                        <input type="hidden" name="id" value="@request.Id" />
+                                                        <input type="hidden" name="status" value="InProgress" />
+                                                        <button type="submit" class="btn btn-sm btn-outline-success" 
+                                                                onclick="return confirm('Talebi işleme almak istediğinizden emin misiniz?')">
+                                                            <i class="fas fa-play"></i>
+                                                        </button>
+                                                    </form>
+                                                }
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-4">
+                        <i class="fas fa-tasks fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">Şu anda aktif atamanız bulunmuyor.</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // ServiceRequest sistemi kullanıldığı için JavaScript'e gerek yok
+        // Butonlar form submit ile çalışıyor
+    </script>
+}

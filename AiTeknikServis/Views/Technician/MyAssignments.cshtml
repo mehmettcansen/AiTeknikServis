@@ -1,0 +1,196 @@
+@model List<AiTeknikServis.Entities.Dtos.ServiceRequest.ServiceRequestResponseDto>
+@{
+    ViewData["Title"] = "Atamalarım";
+}
+
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-tasks me-2"></i>Atamalarım</h2>
+            <div>
+                <div class="btn-group" role="group">
+                    <input type="radio" class="btn-check" name="statusFilter" id="all" value="all" checked>
+                    <label class="btn btn-outline-primary" for="all">Tümü</label>
+
+                    <input type="radio" class="btn-check" name="statusFilter" id="pending" value="pending">
+                    <label class="btn btn-outline-warning" for="pending">Beklemede</label>
+
+                    <input type="radio" class="btn-check" name="statusFilter" id="inprogress" value="inprogress">
+                    <label class="btn btn-outline-info" for="inprogress">İşlemde</label>
+
+                    <input type="radio" class="btn-check" name="statusFilter" id="completed" value="completed">
+                    <label class="btn btn-outline-success" for="completed">Tamamlandı</label>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Assignments Table -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-list me-2"></i>Tüm Atamalarım (@Model.Count)</h5>
+            </div>
+            <div class="card-body">
+                @if (Model.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="assignmentsTable">
+                            <thead>
+                                <tr>
+                                    <th>Talep No</th>
+                                    <th>Müşteri</th>
+                                    <th>Başlık</th>
+                                    <th>Kategori</th>
+                                    <th>Öncelik</th>
+                                    <th>Durum</th>
+                                    <th>Oluşturma Tarihi</th>
+                                    <th>Tamamlama Tarihi</th>
+                                    <th>İşlem</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var request in Model)
+                                {
+                                    <tr data-status="@request.Status.ToString().ToLower()">
+                                        <td><strong>#@request.Id</strong></td>
+                                        <td>@request.CustomerName</td>
+                                        <td>@request.Title</td>
+                                        <td>
+                                            <span class="badge bg-secondary">
+                                                @switch (request.Category)
+                                                {
+                                                    case AiTeknikServis.Entities.Models.ServiceCategory.SoftwareIssue:
+                                                        <i class="fas fa-code me-1"></i>@("Yazılım")
+                                                        break;
+                                                    case AiTeknikServis.Entities.Models.ServiceCategory.HardwareIssue:
+                                                        <i class="fas fa-microchip me-1"></i>@("Donanım")
+                                                        break;
+                                                    case AiTeknikServis.Entities.Models.ServiceCategory.NetworkIssue:
+                                                        <i class="fas fa-network-wired me-1"></i>@("Ağ")
+                                                        break;
+                                                    case AiTeknikServis.Entities.Models.ServiceCategory.SecurityIssue:
+                                                        <i class="fas fa-shield-alt me-1"></i>@("Güvenlik")
+                                                        break;
+                                                    case AiTeknikServis.Entities.Models.ServiceCategory.Maintenance:
+                                                        <i class="fas fa-tools me-1"></i>@("Bakım")
+                                                        break;
+                                                }
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="badge @(request.Priority == AiTeknikServis.Entities.Models.Priority.Critical ? "bg-danger" : 
+                                                                 request.Priority == AiTeknikServis.Entities.Models.Priority.High ? "bg-warning" :
+                                                                 request.Priority == AiTeknikServis.Entities.Models.Priority.Normal ? "bg-info" : "bg-secondary")">
+                                                @switch (request.Priority)
+                                                {
+                                                    case AiTeknikServis.Entities.Models.Priority.Critical:
+                                                        <i class="fas fa-exclamation-triangle me-1"></i>@("Kritik")
+                                                        break;
+                                                    case AiTeknikServis.Entities.Models.Priority.High:
+                                                        <i class="fas fa-arrow-up me-1"></i>@("Yüksek")
+                                                        break;
+                                                    case AiTeknikServis.Entities.Models.Priority.Normal:
+                                                        <i class="fas fa-minus me-1"></i>@("Normal")
+                                                        break;
+                                                    case AiTeknikServis.Entities.Models.Priority.Low:
+                                                        <i class="fas fa-arrow-down me-1"></i>@("Düşük")
+                                                        break;
+                                                }
+                                            </span>
+                                        </td>
+                                        <td>
+                                            @switch (request.Status)
+                                            {
+                                                case AiTeknikServis.Entities.Models.ServiceStatus.Pending:
+                                                    <span class="badge bg-warning"><i class="fas fa-clock me-1"></i>Beklemede</span>
+                                                    break;
+                                                case AiTeknikServis.Entities.Models.ServiceStatus.InProgress:
+                                                    <span class="badge bg-primary"><i class="fas fa-cog me-1"></i>İşlemde</span>
+                                                    break;
+                                                case AiTeknikServis.Entities.Models.ServiceStatus.OnHold:
+                                                    <span class="badge bg-secondary"><i class="fas fa-pause me-1"></i>Bekletildi</span>
+                                                    break;
+                                                case AiTeknikServis.Entities.Models.ServiceStatus.Completed:
+                                                    <span class="badge bg-success"><i class="fas fa-check me-1"></i>Tamamlandı</span>
+                                                    break;
+                                                case AiTeknikServis.Entities.Models.ServiceStatus.Cancelled:
+                                                    <span class="badge bg-danger"><i class="fas fa-times me-1"></i>İptal Edildi</span>
+                                                    break;
+                                                case AiTeknikServis.Entities.Models.ServiceStatus.Rejected:
+                                                    <span class="badge bg-danger"><i class="fas fa-ban me-1"></i>Reddedildi</span>
+                                                    break;
+                                            }
+                                        </td>
+                                        <td>@request.CreatedDate.ToString("dd.MM.yyyy HH:mm")</td>
+                                        <td>@(request.CompletedDate?.ToString("dd.MM.yyyy HH:mm") ?? "-")</td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <a asp-controller="ServiceRequest" asp-action="Details" asp-route-id="@request.Id" 
+                                                   class="btn btn-sm btn-outline-primary" title="Detayları Görüntüle">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                @if (request.Status == AiTeknikServis.Entities.Models.ServiceStatus.Pending)
+                                                {
+                                                    <form asp-controller="ServiceRequest" asp-action="UpdateStatus" method="post" style="display: inline;">
+                                                        @Html.AntiForgeryToken()
+                                                        <input type="hidden" name="id" value="@request.Id" />
+                                                        <input type="hidden" name="status" value="InProgress" />
+                                                        <button type="submit" class="btn btn-sm btn-outline-success" 
+                                                                onclick="return confirm('Talebi işleme almak istediğinizden emin misiniz?')" title="İşleme Al">
+                                                            <i class="fas fa-play"></i>
+                                                        </button>
+                                                    </form>
+                                                }
+                                                @if (request.Status == AiTeknikServis.Entities.Models.ServiceStatus.Completed)
+                                                {
+                                                    <a asp-controller="ServiceRequest" asp-action="ViewReport" asp-route-id="@request.Id" 
+                                                       class="btn btn-sm btn-outline-info" target="_blank" title="Raporu Görüntüle">
+                                                        <i class="fas fa-file-pdf"></i>
+                                                    </a>
+                                                }
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-5">
+                        <i class="fas fa-tasks fa-3x text-muted mb-3"></i>
+                        <h4 class="text-muted">Henüz atama bulunmuyor</h4>
+                        <p class="text-muted">Size atanan görevler burada görünecektir.</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+@section Scripts {
+    <script>
+        // Status filtering
+        document.querySelectorAll('input[name="statusFilter"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                const filterValue = this.value;
+                const rows = document.querySelectorAll('#assignmentsTable tbody tr');
+                
+                rows.forEach(row => {
+                    if (filterValue === 'all') {
+                        row.style.display = '';
+                    } else {
+                        const status = row.getAttribute('data-status');
+                        row.style.display = status === filterValue ? '' : 'none';
+                    }
+                });
+            });
+        });
+    </script>
+}
